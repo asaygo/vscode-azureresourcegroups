@@ -7,6 +7,7 @@ import { AzExtParentTreeItem, AzExtTreeItem, IActionContext, TreeItemIconPath } 
 import { TreeItemCollapsibleState } from "vscode";
 import { AppResourceResolver, GroupNodeConfiguration } from "../api";
 import { localize } from "../utils/localize";
+import { settingUtils } from "../utils/settingUtils";
 import { treeUtils } from "../utils/treeUtils";
 import { ResolvableTreeItemBase } from "./ResolvableTreeItemBase";
 
@@ -32,7 +33,14 @@ export class GroupTreeItemBase extends AzExtParentTreeItem {
     }
 
     public get contextValue(): string {
-        return this.config.contextValue || 'GroupTreeItem';
+        const focusedGroup = settingUtils.getWorkspaceSetting<string>('focusedGroup');
+        const contextValues = [this.config.contextValue, 'group'];
+        if (focusedGroup === this.id) {
+            contextValues.push('focused');
+        } else {
+            contextValues.push('unfocused')
+        }
+        return contextValues.sort().join(';');
     }
 
     public get description(): string | undefined {

@@ -62,7 +62,13 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         }
 
         await this.refresh(context);
-        return <AzExtTreeItem[]>Object.values(this._treeMap);
+        const focusedGroupId = settingUtils.getWorkspaceSetting('focusedGroup');
+        const focusedGroup = Object.values(this._treeMap).find(group => group.id === focusedGroupId);
+        if (focusedGroup) {
+            return [focusedGroup];
+        } else {
+            return <AzExtTreeItem[]>Object.values(this._treeMap);
+        }
     }
 
 

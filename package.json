@@ -158,6 +158,18 @@
                 "title": "%azureResourceGroups.refresh%",
                 "category": "Azure Resource Groups",
                 "icon": "$(refresh)"
+            },
+            {
+                "command": "azureResourceGroups.focusGroup",
+                "title": "Focus Group",
+                "category": "Azure Resource Groups",
+                "icon": "$(eye)"
+            },
+            {
+                "command": "azureResourceGroups.unfocusGroup",
+                "title": "Unfocus Group",
+                "category": "Azure Resource Groups",
+                "icon": "$(eye-closed)"
             }
         ],
         "viewsContainers": {
@@ -261,6 +273,16 @@
                     "command": "azureResourceGroups.viewProperties",
                     "when": "view == azureResourceGroups && viewItem =~ /azureResource/",
                     "group": "9@1"
+                },
+                {
+                    "command": "azureResourceGroups.focusGroup",
+                    "when": "view == azureResourceGroups && viewItem =~ /(group).*(unfocused)/",
+                    "group": "inline"
+                },
+                {
+                    "command": "azureResourceGroups.unfocusGroup",
+                    "when": "view == azureResourceGroups && viewItem =~ /(focused).*(group)/",
+                    "group": "inline"
                 }
             ],
             "commandPalette": [
@@ -346,6 +368,11 @@
                         "type": "string",
                         "description": "%azureResourceGroups.showHiddenTypes%",
                         "default": "resourceGroup"
+                    },
+                    "azureResourceGroups.focusedGroup": {
+                        "type": "string",
+                        "description": "Group to be focused when the extension is loaded",
+                        "default": ""
                     }
                 }
             }
