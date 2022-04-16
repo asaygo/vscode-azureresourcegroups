@@ -16,6 +16,8 @@ export class GroupTreeItemBase extends AzExtParentTreeItem {
     public treeMap: { [key: string]: ResolvableTreeItemBase } = {};
     public config: GroupNodeConfiguration;
 
+    protected internalContextValuesToAdd: string[] = []
+
     public readonly cTime: number = Date.now();
     public mTime: number = Date.now();
 
@@ -34,7 +36,7 @@ export class GroupTreeItemBase extends AzExtParentTreeItem {
 
     public get contextValue(): string {
         const focusedGroup = settingUtils.getWorkspaceSetting<string>('focusedGroup');
-        const contextValues = [this.config.contextValue, 'group'];
+        const contextValues = [...this.config.contextValuesToAdd ?? [], ...this.internalContextValuesToAdd, 'group'];
         if (focusedGroup === this.id) {
             contextValues.push('focused');
         } else {

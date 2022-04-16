@@ -8,8 +8,10 @@ import { ext } from "../../extensionVariables";
 import { GroupTreeItemBase } from "../../tree/GroupTreeItemBase";
 import { settingUtils } from "../../utils/settingUtils";
 
-export async function focusGroup(context: IActionContext, node: GroupTreeItemBase): Promise<void> {
+export async function focusGroup(_context: IActionContext, node: GroupTreeItemBase): Promise<void> {
     const id = node.config.id;
     await settingUtils.updateGlobalSetting('focusedGroup', id);
-    await ext.tree.refresh(context, node.parent);
+    await ext.treeView.reveal(node, {
+        expand: true
+    });
 }

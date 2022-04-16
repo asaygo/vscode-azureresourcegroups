@@ -4,11 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext } from "@microsoft/vscode-azext-utils";
-import { ext } from "../../extensionVariables";
-import { GroupTreeItemBase } from "../../tree/GroupTreeItemBase";
 import { settingUtils } from "../../utils/settingUtils";
 
-export async function unfocusGroup(context: IActionContext, node?: GroupTreeItemBase): Promise<void> {
+export async function unfocusGroup(_context: IActionContext): Promise<void> {
     await settingUtils.updateGlobalSetting('focusedGroup', "");
-    await ext.tree.refresh(context, node?.parent);
 }
