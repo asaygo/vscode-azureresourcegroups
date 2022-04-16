@@ -3,12 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ResourceGroup, ResourceManagementClient } from "@azure/arm-resources";
-import { AzExtParentTreeItem, AzExtTreeItem, IActionContext, nonNullProp, TreeItemIconPath } from "@microsoft/vscode-azext-utils";
+import { ResourceGroup } from "@azure/arm-resources";
+import { AzExtParentTreeItem, AzExtTreeItem, AzureWizard, IActionContext, nonNullProp, TreeItemIconPath } from "@microsoft/vscode-azext-utils";
 import { FileChangeType } from "vscode";
 import { GroupNodeConfiguration } from "../api";
+import { DeleteResourceGroupContext } from "../commands/deleteResourceGroup/DeleteResourceGroupContext";
+import { DeleteResourceGroupStep } from "../commands/deleteResourceGroup/DeleteResourceGroupStep";
 import { ext } from "../extensionVariables";
-import { createResourceClient } from "../utils/azureClients";
+import { createActivityContext } from "../utils/activityUtils";
 import { localize } from "../utils/localize";
 import { treeUtils } from "../utils/treeUtils";
 import { GroupTreeItemBase } from "./GroupTreeItemBase";
@@ -16,19 +18,30 @@ import { GroupTreeItemBase } from "./GroupTreeItemBase";
 export class ResourceGroupTreeItem extends GroupTreeItemBase {
     public static contextValue: string = 'azureResourceGroup';
 
-    constructor(parent: AzExtParentTreeItem, config: GroupNodeConfiguration, data: ResourceGroup) {
+    public async getData(): Promise<ResourceGroup | undefined> {
+        return await this.getResourceGroup(this.name);
+    }
+
+    private data?: ResourceGroup;
+
+    constructor(parent: AzExtParentTreeItem, config: GroupNodeConfiguration, private readonly getResourceGroup: (resourceGroup: string) => Promise<ResourceGroup | undefined>) {
         super(parent, config);
-        this.data = data;
+
+        void this.getResourceGroup(this.name).then((rg) => {
+            this.data = rg;
+        });
 
         ext.tagFS.fireSoon({ type: FileChangeType.Changed, item: this });
     }
 
-    public get data(): ResourceGroup | undefined {
-        return this.data;
-    }
+    public static createFromResourceGroup(parent: AzExtParentTreeItem, rg: ResourceGroup): ResourceGroupTreeItem {
+        return new ResourceGroupTreeItem(parent,
+            {
+                label: nonNullProp(rg, 'name'),
+                id: nonNullProp(rg, 'id'),
 
-    public set data(data: ResourceGroup | undefined) {
-        this.data = data;
+            },
+            async () => rg);
     }
 
     public get contextValue(): string {
@@ -41,11 +54,6 @@ export class ResourceGroupTreeItem extends GroupTreeItemBase {
 
     public get name(): string {
         return this.label;
-    }
-
-    public get description(): string | undefined {
-        const state: string | undefined = this.data?.properties?.provisioningState;
-        return state?.toLowerCase() === 'succeeded' ? `${Object.keys(this.treeMap).length} resources` : state;
     }
 
     public get iconPath(): TreeItemIconPath {
@@ -63,17 +71,23 @@ export class ResourceGroupTreeItem extends GroupTreeItemBase {
         return resources.length;
     }
 
-    public async refreshImpl(context: IActionContext): Promise<void> {
-        const client: ResourceManagementClient = await createResourceClient([context, this]);
-        this.data = await client.resourceGroups.get(this.name);
+    public async refreshImpl(): Promise<void> {
         ext.tagFS.fireSoon({ type: FileChangeType.Changed, item: this });
         this.mTime = Date.now();
     }
 
     public async deleteTreeItemImpl(context: IActionContext): Promise<void> {
-        const client: ResourceManagementClient = await createResourceClient([context, this]);
-        await client.resourceGroups.beginDeleteAndWait(this.name);
-        ext.outputChannel.appendLog(localize('deletedRg', 'Successfully deleted resource group "{0}".', this.name));
+        const wizard = new AzureWizard<DeleteResourceGroupContext>({
+            subscription: this.subscription,
+            resourceGroupToDelete: this.name,
+            activityTitle: localize('deleteResourceGroup', 'Delete resource group "{0}"', this.name),
+            ...(await createActivityContext()),
+            ...context,
+        }, {
+            executeSteps: [new DeleteResourceGroupStep()]
+        });
+
+        await wizard.execute();
     }
 
     public compareChildrenImpl(item1: AzExtTreeItem, item2: AzExtTreeItem): number {

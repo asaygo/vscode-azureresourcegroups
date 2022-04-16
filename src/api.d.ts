@@ -3,7 +3,7 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { AzExtParentTreeItem, AzExtTreeDataProvider, AzExtTreeItem, IActionContext, ISubscriptionContext, TreeItemIconPath } from '@microsoft/vscode-azext-utils';
+import { Activity, AzExtParentTreeItem, AzExtTreeDataProvider, AzExtTreeItem, IActionContext, ICreateChildImplContext, ISubscriptionContext, TreeItemIconPath } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 
 export interface AzureResourceGroupsExtensionApi {
@@ -14,6 +14,7 @@ export interface AzureResourceGroupsExtensionApi {
     readonly revealTreeItem(resourceId: string): Promise<void>;
     readonly registerApplicationResourceResolver(id: string, resolver: AppResourceResolver): Disposable;
     readonly registerLocalResourceProvider(id: string, provider: LocalResourceProvider): Disposable;
+    readonly registerActivity(activity: Activity): Promise<void>;
 }
 
 /**
@@ -38,8 +39,6 @@ export interface AppResource {
 export interface GroupNodeConfiguration {
     readonly label: string;
     readonly id: string;
-    // label for GroupBy Configurations
-    readonly keyLabel?: string;
     readonly description?: string;
     readonly icon?: vscode.ThemeIcon;
     readonly iconPath?: string | vscode.Uri | { light: string | vscode.Uri; dark: string | vscode.Uri } | vscode.ThemeIcon;
@@ -222,4 +221,3 @@ export declare function registerApplicationResourceProvider(id: string, provider
 
 // resource extensions need to activate onView:localResourceView and call this
 export declare function registerLocalResourceProvider(id: string, provider: LocalResourceProvider): vscode.Disposable;
-

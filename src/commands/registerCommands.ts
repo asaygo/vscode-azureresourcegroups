@@ -6,9 +6,10 @@
 import { AzExtTreeItem, IActionContext, registerCommand, registerErrorHandler, registerReportIssueCommand } from '@microsoft/vscode-azext-utils';
 import { commands } from 'vscode';
 import { ext } from '../extensionVariables';
+import { clearActivities } from './activities/clearActivities';
 import { createResource } from './createResource';
 import { createResourceGroup } from './createResourceGroup';
-import { deleteResourceGroup } from './deleteResourceGroup';
+import { deleteResourceGroup } from './deleteResourceGroup/deleteResourceGroup';
 import { focusGroup } from './explorer/focusGroup';
 import { buildGroupByCommand } from './explorer/groupBy';
 import { unfocusGroup } from './explorer/unfocusGroup';
@@ -46,9 +47,12 @@ export function registerCommands(): void {
     registerCommand('azureResourceGroups.groupBy.resourceGroup', buildGroupByCommand('resourceGroup'));
     registerCommand('azureResourceGroups.groupBy.resourceType', buildGroupByCommand('resourceType'));
     registerCommand('azureResourceGroups.groupBy.location', buildGroupByCommand('location'));
+    registerCommand('azureResourceGroups.groupBy.armTag', buildGroupByCommand('armTag'));
 
     registerCommand('azureResourceGroups.focusGroup', focusGroup);
     registerCommand('azureResourceGroups.unfocusGroup', unfocusGroup);
 
     registerCommand('azureResourceGroups.installExtension', installExtension);
+
+    registerCommand('azureResourceGroups.clearActivities', clearActivities);
 }
