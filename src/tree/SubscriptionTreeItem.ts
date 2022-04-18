@@ -6,7 +6,7 @@
 import { ResourceGroup, ResourceManagementClient } from '@azure/arm-resources';
 import { IResourceGroupWizardContext, LocationListStep, ResourceGroupCreateStep, ResourceGroupNameStep, SubscriptionTreeItemBase, uiUtils } from '@microsoft/vscode-azext-azureutils';
 import { AzExtParentTreeItem, AzExtTreeItem, AzureWizard, AzureWizardExecuteStep, AzureWizardPromptStep, ExecuteActivityContext, IActionContext, ICreateChildImplContext, ISubscriptionContext, nonNullOrEmptyValue, nonNullProp, registerEvent } from '@microsoft/vscode-azext-utils';
-import { ConfigurationChangeEvent, ThemeIcon, workspace } from 'vscode';
+import { ConfigurationChangeEvent, ThemeIcon, TreeItemCollapsibleState, workspace } from 'vscode';
 import { AppResource, AppResourceResolver, GroupableResource } from '../api';
 import { applicationResourceProviders } from '../api/registerApplicationResourceProvider';
 import { GroupBySettings } from '../commands/explorer/groupBy';
@@ -62,7 +62,6 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
     }
 
     public async loadMoreChildrenImpl(clearCache: boolean, context: IActionContext): Promise<AzExtTreeItem[]> {
-        console.time('loadChildren');
         if (clearCache && !this._keepCache) {
             this.resetCache();
         }
@@ -80,7 +79,6 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         await this.createTreeMaps(context);
         const focusedGroupId = settingUtils.getWorkspaceSetting('focusedGroup');
         const focusedGroup = Object.values(this._treeMap).find(group => group.id === focusedGroupId);
-        console.timeEnd('loadChildren');
         this._keepCache = false;
         if (focusedGroup) {
             return [focusedGroup];
@@ -125,16 +123,15 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             context.telemetry.properties.isActivationEvent = 'true';
 
             if (e.affectsConfiguration(`${ext.prefix}.${key}`)) {
-                this._keepCache = true;
-                console.log('refreshing subscription on view settings change', this.subscription.subscriptionId);
-                await this.refresh(context);
+                if (this.collapsibleState !== TreeItemCollapsibleState.Collapsed) {
+                    this._keepCache = true;
+                    await this.refresh(context);
+                }
             }
         });
     }
 
     private async createTreeMaps(context: IActionContext): Promise<void> {
-        console.time('createTreeMaps');
-        console.log('createTreeMaps', `keepCache: ${this._keepCache}`);
         this._treeMap = {};
         const ungroupedTreeItem = new GroupTreeItemBase(this, {
             label: localize('ungrouped', 'ungrouped'),
