@@ -406,11 +406,6 @@
                         "description": "%azureResourceGroups.groupBy%",
                         "default": "resourceGroup"
                     },
-                    "azureResourceGroups.focusedGroup": {
-                        "type": "string",
-                        "description": "Group to be focused when the extension is loaded",
-                        "default": ""
-                    },
                     "azureResourceGroups.suppressActivityNotifications": {
                         "type": "boolean",
                         "description": "%azureResourceGroups.suppressActivityNotifications%",
