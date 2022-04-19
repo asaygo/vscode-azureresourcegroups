@@ -6,7 +6,7 @@
 import { ResourceGroup, ResourceManagementClient } from '@azure/arm-resources';
 import { IResourceGroupWizardContext, LocationListStep, ResourceGroupCreateStep, ResourceGroupNameStep, SubscriptionTreeItemBase, uiUtils } from '@microsoft/vscode-azext-azureutils';
 import { AzExtParentTreeItem, AzExtTreeItem, AzureWizard, AzureWizardExecuteStep, AzureWizardPromptStep, ExecuteActivityContext, IActionContext, ICreateChildImplContext, ISubscriptionContext, nonNullOrEmptyValue, nonNullProp, registerEvent } from '@microsoft/vscode-azext-utils';
-import { ConfigurationChangeEvent, ThemeIcon, TreeItemCollapsibleState, workspace } from 'vscode';
+import { ConfigurationChangeEvent, ThemeIcon, workspace } from 'vscode';
 import { AppResource, AppResourceResolver, GroupableResource } from '../api';
 import { applicationResourceProviders } from '../api/registerApplicationResourceProvider';
 import { GroupBySettings } from '../commands/explorer/groupBy';
@@ -131,10 +131,8 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             context.telemetry.properties.isActivationEvent = 'true';
 
             if (e.affectsConfiguration(`${ext.prefix}.${key}`)) {
-                if (this.collapsibleState !== TreeItemCollapsibleState.Collapsed) {
-                    this._keepCache = true;
-                    await this.refresh(context);
-                }
+                this._keepCache = true;
+                await this.refresh(context);
             }
         });
     }
