@@ -7,7 +7,7 @@ import { ResourceGroup, ResourceManagementClient } from '@azure/arm-resources';
 import { IResourceGroupWizardContext, LocationListStep, ResourceGroupCreateStep, ResourceGroupNameStep, SubscriptionTreeItemBase, uiUtils } from '@microsoft/vscode-azext-azureutils';
 import { AzExtParentTreeItem, AzExtTreeItem, AzureWizard, AzureWizardExecuteStep, AzureWizardPromptStep, ExecuteActivityContext, IActionContext, ICreateChildImplContext, ISubscriptionContext, nonNullOrEmptyValue, nonNullProp, registerEvent } from '@microsoft/vscode-azext-utils';
 import { ConfigurationChangeEvent, ThemeIcon, workspace } from 'vscode';
-import { AppResource, AppResourceResolver, GroupableResource } from '../api';
+import { AppResource, AppResourceResolver } from '../api';
 import { applicationResourceProviders } from '../api/registerApplicationResourceProvider';
 import { GroupBySettings } from '../commands/explorer/groupBy';
 import { azureResourceProviderId } from '../constants';
@@ -36,7 +36,6 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         resourceGroups: ResourceGroup[];
         nextLink?: string;
         appResources: AppResource[];
-        groupableResources: GroupableResource[];
     }
     private _treeMap: { [key: string]: GroupTreeItemBase } = {};
 
@@ -44,7 +43,6 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         this.cache = {
             resourceGroups: [],
             appResources: [],
-            groupableResources: []
         }
     }
 
@@ -81,7 +79,7 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             // await Promise.all(applicationResourceProviders.map((provider: ApplicationResourceProvider) => async () => this.rgsItem.push(...(await provider.provideResources(this.subscription) ?? []))));
 
             this.cache.appResources.forEach(item => ext.activationManager.onNodeTypeFetched(item.type));
-            this.cache.groupableResources = this.cache.appResources.map((resource: AppResource): GroupableResource => AppResourceTreeItem.Create(this, resource));
+            this.cache.appResources = this.cache.appResources.map((resource: AppResource) => AppResourceTreeItem.Create(this, resource));
         }
 
         await this.createTreeMaps(context);
@@ -156,7 +154,7 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         };
 
 
-        for (const rgTree of this.cache.groupableResources) {
+        for (const rgTree of this.cache.appResources) {
             (<AppResourceTreeItem>rgTree).mapSubGroupConfigTree(context, groupBySetting, getResourceGroupTask);
         }
 
