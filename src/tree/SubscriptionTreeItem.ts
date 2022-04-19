@@ -118,10 +118,6 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         );
     }
 
-    public async refreshImpl(_context: IActionContext): Promise<void> {
-        console.log('refreshImpl');
-    }
-
     public registerRefreshEvents(key: string): void {
         registerEvent('treeView.onDidChangeConfiguration', workspace.onDidChangeConfiguration, async (context: IActionContext, e: ConfigurationChangeEvent) => {
             context.errorHandling.suppressDisplay = true;
@@ -171,7 +167,6 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         if (!ungroupedTreeItem.hasChildren()) {
             delete this._treeMap[ungroupedTreeItem.id]
         }
-        console.timeEnd('createTreeMaps');
     }
 
     public getSubConfigGroupTreeItem(id: string): GroupTreeItemBase {
