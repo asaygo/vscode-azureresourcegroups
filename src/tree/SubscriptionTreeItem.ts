@@ -77,8 +77,8 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         }
 
         await this.createTreeMaps(context);
-        const focusedGroupId = settingUtils.getWorkspaceSetting('focusedGroup');
-        const focusedGroup = Object.values(this._treeMap).find(group => group.id === focusedGroupId);
+        const focusedGroupId = settingUtils.getWorkspaceSetting<string>('focusedGroup');
+        const focusedGroup = Object.values(this._treeMap).find(group => group.id.toLowerCase() === focusedGroupId?.toLowerCase());
         this._keepCache = false;
         if (focusedGroup) {
             return [focusedGroup];
