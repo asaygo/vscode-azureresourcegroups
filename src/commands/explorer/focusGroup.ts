@@ -6,10 +6,11 @@
 import { IActionContext } from "@microsoft/vscode-azext-utils";
 import { ext } from "../../extensionVariables";
 import { GroupTreeItemBase } from "../../tree/GroupTreeItemBase";
-import { settingUtils } from "../../utils/settingUtils";
 
 export async function focusGroup(_context: IActionContext, node: GroupTreeItemBase): Promise<void> {
     const id = node.config.id;
-    await ext.treeView.reveal(node, { expand: true });
-    await settingUtils.updateGlobalSetting('focusedGroup', id);
+    // don't wait
+    void ext.treeView.reveal(node, { expand: true });
+    await ext.context.workspaceState.update('focusedGroup', id);
+    ext.emitters.onDidChangeFocusedGroup.fire();
 }

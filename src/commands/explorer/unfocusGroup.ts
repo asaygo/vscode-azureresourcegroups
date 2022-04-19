@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext } from "@microsoft/vscode-azext-utils";
-import { settingUtils } from "../../utils/settingUtils";
+import { ext } from "../../extensionVariables";
 
 export async function unfocusGroup(_context: IActionContext): Promise<void> {
-    await settingUtils.updateGlobalSetting('focusedGroup', "");
+    await ext.context.workspaceState.update("focusedGroup", "");
+    ext.emitters.onDidChangeFocusedGroup.fire();
 }
