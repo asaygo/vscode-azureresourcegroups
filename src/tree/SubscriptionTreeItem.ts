@@ -22,8 +22,8 @@ import { ResourceGroupTreeItem } from './ResourceGroupTreeItem';
 
 export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
 
-    private async getResourceGroups(context: IActionContext): Promise<ResourceGroup[]> {
-        if (!this.cache.resourceGroups.length || !this._keepCache) {
+    private async getResourceGroups(clearCache: boolean, context: IActionContext): Promise<ResourceGroup[]> {
+        if (!this.cache.resourceGroups.length || !clearCache) {
             const client: ResourceManagementClient = await createResourceClient([context, this.subscription]);
             this.cache.resourceGroups = await uiUtils.listAllIterator(client.resourceGroups.list());
         }
@@ -46,8 +46,6 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
         }
     }
 
-    private _keepCache: boolean = false;
-
     public constructor(parent: AzExtParentTreeItem, subscription: ISubscriptionContext) {
         super(parent, subscription);
         this.resetCache();
@@ -57,8 +55,6 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             context.errorHandling.suppressDisplay = true;
             context.telemetry.suppressIfSuccessful = true;
             context.telemetry.properties.isActivationEvent = 'true';
-
-            this._keepCache = true;
             await this.refresh(context);
         });
     }
@@ -68,7 +64,7 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
     }
 
     public async loadMoreChildrenImpl(clearCache: boolean, context: IActionContext): Promise<AzExtTreeItem[]> {
-        if (clearCache && !this._keepCache) {
+        if (clearCache) {
             this.resetCache();
         }
 
@@ -82,15 +78,15 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             this.cache.appResources = this.cache.appResources.map((resource: AppResource) => AppResourceTreeItem.Create(this, resource));
         }
 
-        await this.createTreeMaps(context);
+        await this.createTreeMaps(clearCache, context);
         const focusedGroupId = ext.context.workspaceState.get('focusedGroup') as string;
         const focusedGroup = Object.values(this._treeMap).find(group => group.id.toLowerCase() === focusedGroupId?.toLowerCase());
-        this._keepCache = false;
         if (focusedGroup) {
             return [focusedGroup];
         } else {
             return <AzExtTreeItem[]>Object.values(this._treeMap);
         }
+        return <AzExtTreeItem[]>Object.values(this._treeMap);
     }
 
 
@@ -125,13 +121,12 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             context.telemetry.properties.isActivationEvent = 'true';
 
             if (e.affectsConfiguration(`${ext.prefix}.${key}`)) {
-                this._keepCache = true;
                 await this.refresh(context);
             }
         });
     }
 
-    private async createTreeMaps(context: IActionContext): Promise<void> {
+    private async createTreeMaps(clearCache: boolean, context: IActionContext): Promise<void> {
         this._treeMap = {};
         const ungroupedTreeItem = new GroupTreeItemBase(this, {
             label: localize('ungrouped', 'ungrouped'),
@@ -143,7 +138,7 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
 
         const groupBySetting = <string>settingUtils.getWorkspaceSetting<string>('groupBy');
 
-        const resourceGroupsTask = this.getResourceGroups(context);
+        const resourceGroupsTask = this.getResourceGroups(clearCache, context);
 
         const getResourceGroupTask: (resourceGroup: string) => Promise<ResourceGroup | undefined> = async (resourceGroup: string) => {
             return (await resourceGroupsTask).find((rg) => rg.name === resourceGroup);
