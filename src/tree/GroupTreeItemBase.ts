@@ -35,9 +35,9 @@ export class GroupTreeItemBase extends AzExtParentTreeItem {
     }
 
     public get contextValue(): string {
-        const focusedGroup = ext.context.workspaceState.get('focusedGroup');
+        const focusedGroup = ext.context.workspaceState.get<string>('focusedGroup');
         const contextValues = new Set([...this.config.contextValuesToAdd ?? [], ...this.internalContextValuesToAdd, 'group']);
-        if (focusedGroup === this.id) {
+        if (focusedGroup?.toLowerCase() === this.id.toLowerCase()) {
             contextValues.add('focused');
         } else {
             contextValues.add('unfocused')
