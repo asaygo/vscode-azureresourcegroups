@@ -146,7 +146,7 @@ export class AppResourceTreeItem extends ResolvableTreeItemBase implements Group
         }
 
         subGroupTreeItem.treeMap[this.id] = this;
-        void ext.appResourceTree.refreshUIOnly(subGroupTreeItem);
+        // void ext.appResourceTree.refreshUIOnly(subGroupTreeItem);
     }
 
     public createSubGroupTreeItem(_context: IActionContext, groupBySetting: string, getResourceGroup: (resourceGroup: string) => Promise<ResourceGroup | undefined>): GroupTreeItemBase {

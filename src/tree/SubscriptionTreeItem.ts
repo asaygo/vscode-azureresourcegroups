@@ -214,7 +214,7 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
 
         // To prevent "Element with id {0} is already registered" errors, we must
         // clear VS Code's internal cache by passing `undefined` to refresh the whole tree
-        this.treeDataProvider.refreshUIOnly(undefined);
+        // this.treeDataProvider.refreshUIOnly(undefined);
     }
 
     private async tryGetFocusGroupTreeItem(): Promise<GroupTreeItemBase | undefined> {
