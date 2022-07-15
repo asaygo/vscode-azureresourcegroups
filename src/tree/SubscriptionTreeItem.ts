@@ -6,7 +6,7 @@
 import { ResourceGroup, ResourceManagementClient } from '@azure/arm-resources';
 import { IResourceGroupWizardContext, LocationListStep, ResourceGroupCreateStep, ResourceGroupNameStep, SubscriptionTreeItemBase, uiUtils } from '@microsoft/vscode-azext-azureutils';
 import { AzExtParentTreeItem, AzExtTreeItem, AzureWizard, AzureWizardExecuteStep, AzureWizardPromptStep, ExecuteActivityContext, IActionContext, IAzureQuickPickItem, IAzureQuickPickOptions, ICreateChildImplContext, ISubscriptionContext, nonNullOrEmptyValue, nonNullProp, NoResourceFoundError, registerEvent } from '@microsoft/vscode-azext-utils';
-import { AppResourceFilter, PickAppResourceOptions } from '@microsoft/vscode-azext-utils/hostapi';
+import { AppResource, Filter, PickAppResourceOptions } from '@microsoft/vscode-azext-utils/hostapi';
 import { ConfigurationChangeEvent, workspace } from 'vscode';
 import { applicationResourceProviders } from '../api/registerApplicationResourceProvider';
 import { GroupBySettings } from '../commands/explorer/groupBy';
@@ -14,7 +14,6 @@ import { azureResourceProviderId, ungroupedId } from '../constants';
 import { ext } from '../extensionVariables';
 import { createActivityContext } from '../utils/activityUtils';
 import { createResourceClient } from '../utils/azureClients';
-import { getResourceType } from '../utils/azureUtils';
 import { localize } from '../utils/localize';
 import { settingUtils } from '../utils/settingUtils';
 import { AppResourceTreeItem } from './AppResourceTreeItem';
@@ -31,10 +30,9 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
     public readonly childTypeLabel: string = localize('resourceGroup', 'Resource Group');
     public treeMap: GroupTreeMap = {}
 
-
     private cache: ResourceCache = new ResourceCache(this);
 
-    public async pickAppResource(context: IActionContext, options?: PickAppResourceOptions): Promise<AppResourceTreeItem> {
+    public async pickAppResource(context: IActionContext, filter: Filter<AppResource>, options?: PickAppResourceOptions): Promise<AppResourceTreeItem> {
         await this.getCachedChildren(context);
 
         let appResources = this.cache.appResources;
@@ -43,18 +41,7 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             appResources = GroupTreeItemBase.filterResources(this.cache.appResources);
         }
 
-        if (options?.filter) {
-            const filters: AppResourceFilter[] = Array.isArray(options.filter) ? options.filter : [options.filter];
-            appResources = appResources.filter((appResource) => filters.some(filter => {
-                if (getResourceType(filter.type, filter.kind).toLowerCase() === getResourceType(appResource.data.type, appResource.data.kind).toLowerCase()) {
-                    if (filter.tags) {
-                        return Object.entries(filter.tags).every(([tag, value]) => appResource.tags?.[tag] === value);
-                    }
-                    return true;
-                }
-                return false;
-            }));
-        }
+        appResources = appResources.filter((appResource) => filter.matches(appResource.data));
 
         // If requested, resolve the `AppResourceTreeItem`s now
         if (options?.resolveQuickPicksBeforeDisplay) {
@@ -68,7 +55,7 @@ export class SubscriptionTreeItem extends SubscriptionTreeItemBase {
             .sort((a, b) => a.group.localeCompare(b.group));
 
         const quickPickOptions: IAzureQuickPickOptions = {
-            enableGrouping: !options?.filter,
+            enableGrouping: true,
             placeHolder: localize('selectResource', 'Select a resource'),
             ...options,
         };

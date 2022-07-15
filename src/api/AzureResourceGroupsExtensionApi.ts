@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AzExtTreeDataProvider, AzExtTreeItem, ITreeItemPickerContext } from '@microsoft/vscode-azext-utils';
-import { Activity, AppResourceResolver, AzureHostExtensionApi, AzureResourceGroupsExtensionApi, LocalResourceProvider, PickAppResourceOptions, WorkspaceResourceProvider } from '@microsoft/vscode-azext-utils/hostapi';
+import { Activity, AppResource, AppResourceResolver, AzureHostExtensionApi, AzureResourceGroupsExtensionApi, Filter, LocalResourceProvider, PickAppResourceOptions, WorkspaceResourceProvider } from '@microsoft/vscode-azext-utils/hostapi';
 import { Disposable, TreeView } from 'vscode';
 
 export class InternalAzureResourceGroupsExtensionApi implements AzureHostExtensionApi, AzureResourceGroupsExtensionApi {
@@ -17,7 +17,7 @@ export class InternalAzureResourceGroupsExtensionApi implements AzureHostExtensi
     #registerApplicationResourceResolver: (id: string, resolver: AppResourceResolver) => Disposable;
     #registerWorkspaceResourceProvider: (id: string, resolver: WorkspaceResourceProvider) => Disposable;
     #registerActivity: (activity: Activity) => Promise<void>;
-    #pickAppResource: <T extends AzExtTreeItem>(context: ITreeItemPickerContext, options?: PickAppResourceOptions) => Promise<T>;
+    #pickAppResource: AzureHostExtensionApi['pickAppResource'];
 
     // This `Omit` is here because the interface expects those keys to be defined, but in this object they will not be
     // They are replaced with functions defined on this class that merely wrap the newly-named keys
@@ -59,8 +59,8 @@ export class InternalAzureResourceGroupsExtensionApi implements AzureHostExtensi
         return await this.#revealTreeItem(resourceId);
     }
 
-    public async pickAppResource<T extends AzExtTreeItem>(context: ITreeItemPickerContext, options?: PickAppResourceOptions): Promise<T> {
-        return this.#pickAppResource(context, options);
+    public async pickAppResource<T extends AzExtTreeItem>(context: ITreeItemPickerContext, filter: Filter<AppResource>, options?: PickAppResourceOptions): Promise<T> {
+        return this.#pickAppResource(context, filter, options);
     }
 
     public registerApplicationResourceResolver(id: string, resolver: AppResourceResolver): Disposable {

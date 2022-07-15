@@ -6,10 +6,11 @@
 import { IActionContext, openReadOnlyJson } from '@microsoft/vscode-azext-utils';
 import { pickAppResource } from '../api/pickAppResource';
 import { AppResourceTreeItem } from '../tree/AppResourceTreeItem';
+import { MatchAllFilter } from '../utils/filters';
 
 export async function viewProperties(context: IActionContext, node?: AppResourceTreeItem): Promise<void> {
     if (!node) {
-        node = await pickAppResource<AppResourceTreeItem>(context);
+        node = await pickAppResource<AppResourceTreeItem>(context, new MatchAllFilter());
     }
 
     await openReadOnlyJson(node, node.data);

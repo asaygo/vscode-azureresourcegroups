@@ -7,10 +7,11 @@ import { openInPortal as uiOpenInPortal } from '@microsoft/vscode-azext-azureuti
 import { AzExtTreeItem, IActionContext, nonNullProp } from '@microsoft/vscode-azext-utils';
 import { pickAppResource } from '../api/pickAppResource';
 import { AppResourceTreeItem } from '../tree/AppResourceTreeItem';
+import { MatchAllFilter } from '../utils/filters';
 
 export async function openInPortal(context: IActionContext, node?: AzExtTreeItem): Promise<void> {
     if (!node) {
-        node = await pickAppResource<AppResourceTreeItem>(context);
+        node = await pickAppResource<AppResourceTreeItem>(context, new MatchAllFilter());
     }
 
     await uiOpenInPortal(node, nonNullProp(node, 'id'));

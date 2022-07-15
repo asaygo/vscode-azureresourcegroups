@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AzExtTreeItem, ITreeItemPickerContext } from "@microsoft/vscode-azext-utils";
-import { PickAppResourceOptions } from "@microsoft/vscode-azext-utils/hostapi";
+import { AppResource, Filter, PickAppResourceOptions } from "@microsoft/vscode-azext-utils/hostapi";
 import { ext } from "../extensionVariables";
 import { SubscriptionTreeItem } from "../tree/SubscriptionTreeItem";
 
-export async function pickAppResource<T extends AzExtTreeItem>(context: ITreeItemPickerContext, options?: PickAppResourceOptions): Promise<T> {
+export async function pickAppResource<T extends AzExtTreeItem>(context: ITreeItemPickerContext, filter: Filter<AppResource>, options?: PickAppResourceOptions): Promise<T> {
     const subscription: SubscriptionTreeItem = await ext.appResourceTree.showTreeItemPicker(SubscriptionTreeItem.contextValue, context);
-    const appResource = await subscription.pickAppResource(context, options);
+    const appResource = await subscription.pickAppResource(context, filter, options);
 
     if (options?.expectedChildContextValue) {
         return ext.appResourceTree.showTreeItemPicker(options.expectedChildContextValue, context, appResource);
