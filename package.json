@@ -215,16 +215,34 @@
                 "icon": "resources/providers/microsoft.web/functionapp.svg"
             },
             {
+                "command": "azureResourceGroups.filterActions.functions.active",
+                "title": "Show Azure Static Web App Actions",
+                "category": "Azure",
+                "icon": "resources/providers/microsoft.web/functionapp_active.svg"
+            },
+            {
                 "command": "azureResourceGroups.filterActions.webApps",
                 "title": "Show Azure Web Apps Actions",
                 "category": "Azure",
                 "icon": "resources/providers/microsoft.web/sites.svg"
             },
             {
+                "command": "azureResourceGroups.filterActions.webApps.active",
+                "title": "Show Azure Static Web App Actions",
+                "category": "Azure",
+                "icon": "resources/providers/microsoft.web/sites_active.svg"
+            },
+            {
                 "command": "azureResourceGroups.filterActions.staticWebApps",
                 "title": "Show Azure Static Web App Actions",
                 "category": "Azure",
                 "icon": "resources/providers/microsoft.web/staticsites.svg"
+            },
+            {
+                "command": "azureResourceGroups.filterActions.staticWebApps.active",
+                "title": "Show Azure Static Web App Actions",
+                "category": "Azure",
+                "icon": "resources/providers/microsoft.web/staticsites_active.svg"
             }
         ],
         "viewsContainers": {
@@ -291,17 +309,32 @@
                 },
                 {
                     "command": "azureResourceGroups.filterActions.functions",
-                    "when": "view == azureActions",
+                    "when": "view == azureActions && azureActions.filter != functionapp",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "azureResourceGroups.filterActions.functions.active",
+                    "when": "view == azureActions && azureActions.filter == functionapp",
                     "group": "navigation@2"
                 },
                 {
                     "command": "azureResourceGroups.filterActions.webApps",
-                    "when": "view == azureActions",
+                    "when": "view == azureActions && azureActions.filter != webApps",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "azureResourceGroups.filterActions.webApps.active",
+                    "when": "view == azureActions && azureActions.filter == webApps",
                     "group": "navigation@3"
                 },
                 {
                     "command": "azureResourceGroups.filterActions.staticWebApps",
-                    "when": "view == azureActions",
+                    "when": "view == azureActions && azureActions.filter != staticWebApps",
+                    "group": "navigation@4"
+                },
+                {
+                    "command": "azureResourceGroups.filterActions.staticWebApps.active",
+                    "when": "view == azureActions && azureActions.filter == staticWebApps",
                     "group": "navigation@4"
                 },
                 {

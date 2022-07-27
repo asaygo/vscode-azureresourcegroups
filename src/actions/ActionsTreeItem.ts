@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AzExtParentTreeItem, AzExtTreeItem, IActionContext, IGenericTreeItemOptions } from "@microsoft/vscode-azext-utils";
-import { Disposable, ThemeIcon } from "vscode";
+import { commands, Disposable, ThemeIcon } from "vscode";
 import { ext } from "../extensionVariables";
 import { ActionTreeItem } from "./ActionTreeItem";
 
@@ -24,6 +24,7 @@ export class ActionsTreeItem extends AzExtParentTreeItem implements Disposable {
     public async filter(context: IActionContext, value: string, displayName: string): Promise<void> {
         ext.actionsTreeView.description = displayName;
         this._filter = value;
+        await commands.executeCommand('setContext', 'azureActions.filter', value);
         await this.refresh(context);
     }
 

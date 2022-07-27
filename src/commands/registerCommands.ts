@@ -80,4 +80,13 @@ export function registerCommands(): void {
     registerCommand('azureResourceGroups.filterActions.staticWebApps', async (context) => {
         await ext.actionsTreeItem.filter(context, 'staticWebApps', 'Static Web Apps');
     });
+    registerCommand('azureResourceGroups.filterActions.staticWebApps.active', async () => {
+        //
+    });
+    registerCommand('azureResourceGroups.filterActions.functions.active', async () => {
+        //
+    });
+    registerCommand('azureResourceGroups.filterActions.webApps.active', async () => {
+        //
+    });
 }
