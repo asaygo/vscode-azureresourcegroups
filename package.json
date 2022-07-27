@@ -195,6 +195,36 @@
                 "command": "azureResourceGroups.showGroupOptions",
                 "title": "%azureResourceGroups.showGroupOptions%",
                 "category": "Azure"
+            },
+            {
+                "command": "azureResourceGroups.filterActions.favorites",
+                "title": "Show Favorite Azure Actions",
+                "category": "Azure",
+                "icon": "$(heart-filled)"
+            },
+            {
+                "command": "azureResourceGroups.favoriteAction",
+                "title": "Favorite Action",
+                "category": "Azure",
+                "icon": "$(heart-filled)"
+            },
+            {
+                "command": "azureResourceGroups.filterActions.functions",
+                "title": "Show Azure Functions Actions",
+                "category": "Azure",
+                "icon": "resources/providers/microsoft.web/functionapp.svg"
+            },
+            {
+                "command": "azureResourceGroups.filterActions.webApps",
+                "title": "Show Azure Web Apps Actions",
+                "category": "Azure",
+                "icon": "resources/providers/microsoft.web/sites.svg"
+            },
+            {
+                "command": "azureResourceGroups.filterActions.staticWebApps",
+                "title": "Show Azure Static Web App Actions",
+                "category": "Azure",
+                "icon": "resources/providers/microsoft.web/staticsites.svg"
             }
         ],
         "viewsContainers": {
@@ -215,6 +245,11 @@
         },
         "views": {
             "azure": [
+                {
+                    "id": "azureActions",
+                    "name": "Actions",
+                    "visibility": "visible"
+                },
                 {
                     "id": "azureResourceGroups",
                     "name": "Resources",
@@ -250,6 +285,26 @@
         "menus": {
             "view/title": [
                 {
+                    "command": "azureResourceGroups.filterActions.favorites",
+                    "when": "view == azureActions",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "azureResourceGroups.filterActions.functions",
+                    "when": "view == azureActions",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "azureResourceGroups.filterActions.webApps",
+                    "when": "view == azureActions",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "azureResourceGroups.filterActions.staticWebApps",
+                    "when": "view == azureActions",
+                    "group": "navigation@4"
+                },
+                {
                     "command": "azureResourceGroups.createResource",
                     "when": "view == azureResourceGroups",
                     "group": "navigation@1"
@@ -281,6 +336,11 @@
                 }
             ],
             "view/item/context": [
+                {
+                    "command": "azureResourceGroups.favoriteAction",
+                    "when": "view == azureActions && viewItem =~ /action/",
+                    "group": "inline"
+                },
                 {
                     "command": "azureResourceGroups.selectSubscriptions",
                     "when": "view == azureResourceGroups && viewItem == azureextensionui.azureSubscription",

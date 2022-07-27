@@ -6,6 +6,7 @@
 import { AzExtTreeDataProvider, AzExtTreeItem, IAzExtOutputChannel } from "@microsoft/vscode-azext-utils";
 import { AppResourceResolver } from "@microsoft/vscode-azext-utils/hostapi";
 import { DiagnosticCollection, Disposable, Event, EventEmitter, ExtensionContext, TreeView } from "vscode";
+import { ActionsTreeItem } from "./actions/ActionsTreeItem";
 import { ActivityLogTreeItem } from "./activityLog/ActivityLogsTreeItem";
 import { TagFileSystem } from "./commands/tags/TagFileSystem";
 import { AzureAccountTreeItem } from "./tree/AzureAccountTreeItem";
@@ -32,6 +33,9 @@ export namespace ext {
     export let workspaceTreeView: TreeView<AzExtTreeItem>;
     export let activityLogTree: AzExtTreeDataProvider;
     export let activityLogTreeItem: ActivityLogTreeItem;
+    export let actionsTreeView: TreeView<AzExtTreeItem>;
+    export let actionsTree: AzExtTreeDataProvider;
+    export let actionsTreeItem: ActionsTreeItem;
     export let rootAccountTreeItem: AzureAccountTreeItem;
     export let helpTree: AzExtTreeDataProvider;
     export let outputChannel: IAzExtOutputChannel;

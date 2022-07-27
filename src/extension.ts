@@ -10,6 +10,7 @@ import { AzExtTreeDataProvider, AzExtTreeItem, callWithTelemetryAndErrorHandling
 import { AzureExtensionApiProvider } from '@microsoft/vscode-azext-utils/api';
 import type { AppResourceResolver } from '@microsoft/vscode-azext-utils/hostapi';
 import * as vscode from 'vscode';
+import { ActionsTreeItem } from './actions/ActionsTreeItem';
 import { ActivityLogTreeItem } from './activityLog/ActivityLogsTreeItem';
 import { registerActivity } from './activityLog/registerActivity';
 import { InternalAzureResourceGroupsExtensionApi } from './api/AzureResourceGroupsExtensionApi';
@@ -81,6 +82,10 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         context.subscriptions.push(ext.activityLogTreeItem = new ActivityLogTreeItem());
         ext.activityLogTree = new AzExtTreeDataProvider(ext.activityLogTreeItem, 'azureActivityLog.loadMore');
         context.subscriptions.push(vscode.window.createTreeView('azureActivityLog', { treeDataProvider: ext.activityLogTree }));
+
+        context.subscriptions.push(ext.actionsTreeItem = new ActionsTreeItem());
+        ext.actionsTree = new AzExtTreeDataProvider(ext.actionsTreeItem, 'azureActions.loadMore');
+        context.subscriptions.push(ext.actionsTreeView = vscode.window.createTreeView('azureActions', { treeDataProvider: ext.actionsTree }));
 
         context.subscriptions.push(ext.activationManager = new ExtensionActivationManager());
 

@@ -47,7 +47,6 @@
                 "--extensionDevelopmentPath=${workspaceFolder}/../vscode-azurestorage",
                 "--extensionDevelopmentPath=${workspaceFolder}/../vscode-azurefunctions",
                 "--extensionDevelopmentPath=${workspaceFolder}/../vscode-azurevirtualmachines",
-                "--extensionDevelopmentPath=${workspaceFolder}/../vscode-azureappservice",
                 "--extensionDevelopmentPath=${workspaceFolder}/../vscode-cosmosdb"
             ],
             "outFiles": [

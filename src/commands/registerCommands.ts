@@ -64,4 +64,20 @@ export function registerCommands(): void {
         context.telemetry.properties.url = url;
         await openUrl(url)
     });
+
+    registerCommand('azureResourceGroups.favoriteAction', async (context, ti) => {
+        await ext.actionsTreeItem.favorite(context, ti);
+    });
+    registerCommand('azureResourceGroups.filterActions.favorites', async (context) => {
+        await ext.actionsTreeItem.filter(context, 'favorites', 'Favorites');
+    });
+    registerCommand('azureResourceGroups.filterActions.functions', async (context) => {
+        await ext.actionsTreeItem.filter(context, 'functionapp', 'Functions');
+    });
+    registerCommand('azureResourceGroups.filterActions.webApps', async (context) => {
+        await ext.actionsTreeItem.filter(context, 'webApps', 'App Service');
+    });
+    registerCommand('azureResourceGroups.filterActions.staticWebApps', async (context) => {
+        await ext.actionsTreeItem.filter(context, 'staticWebApps', 'Static Web Apps');
+    });
 }
