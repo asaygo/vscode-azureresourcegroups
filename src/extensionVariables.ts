@@ -8,6 +8,7 @@ import { AppResourceResolver } from "@microsoft/vscode-azext-utils/hostapi";
 import { DiagnosticCollection, Disposable, Event, EventEmitter, ExtensionContext, TreeView } from "vscode";
 import { ActivityLogTreeItem } from "./activityLog/ActivityLogsTreeItem";
 import { TagFileSystem } from "./commands/tags/TagFileSystem";
+import { ActionsTreeItem } from "./tree/actions/ActionsTreeItem";
 import { AzureAccountTreeItem } from "./tree/AzureAccountTreeItem";
 import { ExtensionActivationManager } from "./utils/ExtensionActivationManager";
 
@@ -30,6 +31,9 @@ export namespace ext {
     export let appResourceTreeView: TreeView<AzExtTreeItem>;
     export let workspaceTree: AzExtTreeDataProvider;
     export let workspaceTreeView: TreeView<AzExtTreeItem>;
+    export let actionsTree: AzExtTreeDataProvider;
+    export let actionsTreeView: TreeView<AzExtTreeItem>;
+    export let actionsTreeItem: ActionsTreeItem;
     export let activityLogTree: AzExtTreeDataProvider;
     export let activityLogTreeItem: ActivityLogTreeItem;
     export let rootAccountTreeItem: AzureAccountTreeItem;

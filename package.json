@@ -221,6 +221,11 @@
                     "visibility": "visible"
                 },
                 {
+                    "id": "azureActions",
+                    "name": "Actions",
+                    "visibility": "visible"
+                },
+                {
                     "id": "azureWorkspace",
                     "name": "Workspace",
                     "visibility": "visible"

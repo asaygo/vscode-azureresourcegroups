@@ -27,6 +27,7 @@ import { ext } from './extensionVariables';
 import { installableAppResourceResolver } from './resolvers/InstallableAppResourceResolver';
 import { shallowResourceResolver } from './resolvers/ShallowResourceResolver';
 import { wrapperResolver } from './resolvers/WrapperResolver';
+import { ActionsTreeItem } from './tree/actions/ActionsTreeItem';
 import { AzureAccountTreeItem } from './tree/AzureAccountTreeItem';
 import { GroupTreeItemBase } from './tree/GroupTreeItemBase';
 import { HelpTreeItem } from './tree/HelpTreeItem';
@@ -81,6 +82,10 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         context.subscriptions.push(ext.activityLogTreeItem = new ActivityLogTreeItem());
         ext.activityLogTree = new AzExtTreeDataProvider(ext.activityLogTreeItem, 'azureActivityLog.loadMore');
         context.subscriptions.push(vscode.window.createTreeView('azureActivityLog', { treeDataProvider: ext.activityLogTree }));
+
+        context.subscriptions.push(ext.actionsTreeItem = new ActionsTreeItem());
+        ext.actionsTree = new AzExtTreeDataProvider(ext.actionsTreeItem, 'actionsTree.loadMore');
+        context.subscriptions.push(vscode.window.createTreeView('azureActions', { treeDataProvider: ext.actionsTree, showCollapseAll: true }));
 
         context.subscriptions.push(ext.activationManager = new ExtensionActivationManager());
 
