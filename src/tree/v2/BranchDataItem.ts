@@ -1,5 +1,6 @@
+import { Wrapper } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
-import { ApplicationResource, Box, BranchDataProvider, ResourceModelBase } from '../../api/v2/v2AzureResourcesApi';
+import { ApplicationResource, BranchDataProvider, ResourceModelBase } from '../../api/v2/v2AzureResourcesApi';
 import { ResourceGroupsItem } from './ResourceGroupsItem';
 import { ResourceGroupsItemCache } from './ResourceGroupsItemCache';
 
@@ -7,7 +8,7 @@ export type BranchDataItemOptions = {
     defaults?: vscode.TreeItem;
 };
 
-export class BranchDataItem implements ResourceGroupsItem, Box {
+export class BranchDataItem implements ResourceGroupsItem, Wrapper {
     constructor(
         private readonly branchItem: ResourceModelBase,
         private readonly branchDataProvider: BranchDataProvider<ApplicationResource, ResourceModelBase>,
@@ -36,6 +37,13 @@ export class BranchDataItem implements ResourceGroupsItem, Box {
 
     unwrap<T>(): T {
         return this.branchItem as T;
+    }
+
+    public get quickPickOptions(): { readonly contextValues: string[]; readonly isLeaf: boolean; } {
+        return this.branchItem.quickPickOptions ?? {
+            contextValues: [],
+            isLeaf: true,
+        };
     }
 
     id: string;
