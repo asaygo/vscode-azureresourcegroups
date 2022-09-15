@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { GenericResource } from "@azure/arm-resources";
+import { AzExtResourceType } from "@microsoft/vscode-azext-utils";
+import { AppResource } from "@microsoft/vscode-azext-utils/hostapi";
 import { localize } from "./utils/localize";
 
 export const azureExtensions: IAzExtMetadata[] = [
@@ -11,10 +12,7 @@ export const azureExtensions: IAzExtMetadata[] = [
         name: 'vscode-azurefunctions',
         label: 'Functions',
         resourceTypes: [
-            {
-                name: 'microsoft.web/sites',
-                matchesResource: isFunctionApp
-            }
+            AzExtResourceType.FunctionApp
         ],
         tutorial: {
             label: localize('deployServerless', 'Create and deploy a serverless app'),
@@ -26,10 +24,7 @@ export const azureExtensions: IAzExtMetadata[] = [
         name: 'vscode-azureappservice',
         label: 'App Service',
         resourceTypes: [
-            {
-                name: 'microsoft.web/sites',
-                matchesResource: r => !isFunctionApp(r)
-            }
+            AzExtResourceType.AppServices
         ],
         tutorial: {
             label: localize('deployWebApp', 'Deploy a web app'),
@@ -41,7 +36,7 @@ export const azureExtensions: IAzExtMetadata[] = [
         name: 'vscode-azurestaticwebapps',
         label: 'Static Web Apps',
         resourceTypes: [
-            'microsoft.web/staticsites'
+            AzExtResourceType.StaticWebApps
         ],
         tutorial: {
             label: localize('deployStatic', 'Deploy a static app'),
@@ -59,7 +54,7 @@ export const azureExtensions: IAzExtMetadata[] = [
         name: 'vscode-azurestorage',
         label: 'Storage',
         resourceTypes: [
-            'microsoft.storage/storageaccounts'
+            AzExtResourceType.StorageAccounts
         ],
         reportIssueCommandId: 'azureStorage.reportIssue'
     },
@@ -67,7 +62,7 @@ export const azureExtensions: IAzExtMetadata[] = [
         name: 'vscode-azurevirtualmachines',
         label: 'Virtual Machines',
         resourceTypes: [
-            'microsoft.compute/virtualmachines'
+            AzExtResourceType.VirtualMachines
         ],
         reportIssueCommandId: 'azureVirtualMachines.reportIssue'
     },
@@ -75,9 +70,9 @@ export const azureExtensions: IAzExtMetadata[] = [
         name: 'vscode-cosmosdb',
         label: 'Databases',
         resourceTypes: [
-            'microsoft.documentdb/databaseaccounts',
-            'microsoft.dbforpostgresql/servers',
-            'microsoft.dbforpostgresql/flexibleservers',
+            AzExtResourceType.AzureCosmosDb,
+            AzExtResourceType.PostgresqlServersStandard,
+            AzExtResourceType.PostgresqlServersFlexible,
         ],
         reportIssueCommandId: 'azureDatabases.reportIssue'
     },
@@ -85,7 +80,8 @@ export const azureExtensions: IAzExtMetadata[] = [
         name: 'vscode-azurecontainerapps',
         label: 'Container Apps',
         resourceTypes: [
-            // 'microsoft.app/containerapps'
+            // AzExtResourceType.ContainerApps,
+            // AzExtResourceType.ContainerAppsEnvironment,
         ],
         reportIssueCommandId: 'containerApps.reportIssue'
     }
@@ -95,7 +91,7 @@ export interface IAzExtMetadata {
     name: string;
     label: string;
     publisher?: string;
-    resourceTypes: (string | IAzExtResourceType)[];
+    resourceTypes: AzExtResourceType[];
     tutorial?: IAzExtTutorial;
     reportIssueCommandId?: string;
 }
@@ -106,14 +102,10 @@ export interface IAzExtResourceType {
     /**
      * Only necessary if the resourceType itself isn't enough to identify the extension
      */
-    matchesResource(resource: GenericResource): boolean;
+    matchesResource(resource: AppResource): boolean;
 }
 
 export interface IAzExtTutorial {
     label: string;
     url: string;
-}
-
-function isFunctionApp(resource: GenericResource): boolean {
-    return !!resource.kind?.toLowerCase().includes('functionapp');
 }

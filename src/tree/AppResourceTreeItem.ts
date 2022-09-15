@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ResourceGroup } from "@azure/arm-resources";
-import { AzExtParentTreeItem, AzExtTreeItem, IActionContext, nonNullProp, TreeItemIconPath } from "@microsoft/vscode-azext-utils";
-import { AppResource, GroupableResource, GroupingConfig, GroupNodeConfiguration } from "@microsoft/vscode-azext-utils/hostapi";
+import { AzExtParentTreeItem, AzExtResourceType, AzExtTreeItem, IActionContext, nonNullProp, TreeItemIconPath } from "@microsoft/vscode-azext-utils";
+import { AppResource, GroupableResource, GroupingConfig, GroupNodeConfiguration, ResolvedAppResourceBase } from "@microsoft/vscode-azext-utils/hostapi";
 import { FileChangeType } from "vscode";
 import { azureExtensions } from "../azureExtensions";
 import { GroupBySettings } from "../commands/explorer/groupBy";
@@ -31,6 +31,7 @@ export class AppResourceTreeItem extends ResolvableTreeItemBase implements Group
 
     public type: string;
     public kind?: string | undefined;
+    public azExtResourceType: AzExtResourceType;
     public location?: string | undefined;
     public tags?: { [propertyName: string]: string; } | undefined;
 
@@ -38,11 +39,14 @@ export class AppResourceTreeItem extends ResolvableTreeItemBase implements Group
 
     private constructor(root: AzExtParentTreeItem, resource: AppResource) {
         super(root);
-        this.rootGroupTreeItem = root;
-        this.rootGroupConfig = <GroupNodeConfiguration><unknown>root;
+
+        if (root) {
+            this.rootGroupTreeItem = root;
+            this.rootGroupConfig = <GroupNodeConfiguration><unknown>root;
+            this.groupConfig = createGroupConfigFromResource(resource, root.id);
+        }
 
         this.data = resource;
-        this.groupConfig = createGroupConfigFromResource(resource, root.id);
 
         this.contextValues.add(AppResourceTreeItem.contextValue);
         ext.tagFS.fireSoon({ type: FileChangeType.Changed, item: this });
@@ -53,11 +57,7 @@ export class AppResourceTreeItem extends ResolvableTreeItemBase implements Group
         this.tags = resource.tags;
 
         this.isHidden = !azureExtensions.some(ext =>
-            ext.resourceTypes.some((type) => {
-                return typeof type === 'string' ?
-                    type.toLowerCase() === this.type?.toLowerCase() :
-                    type.name.toLowerCase() === this.type?.toLowerCase()
-            }));
+            ext.resourceTypes.some(type => type === this.data.azExtResourceType));
     }
 
     /**
@@ -69,32 +69,7 @@ export class AppResourceTreeItem extends ResolvableTreeItemBase implements Group
      */
     public static Create(parent: AzExtParentTreeItem, resource: AppResource): AppResourceTreeItem {
         const resolvable: AppResourceTreeItem = new AppResourceTreeItem(parent, resource);
-        const providerHandler: ProxyHandler<AppResourceTreeItem> = {
-            get: (target: AppResourceTreeItem, name: string): unknown => {
-                return resolvable?.resolveResult?.[name] ?? target[name];
-            },
-            set: (target: AppResourceTreeItem, name: string, value: unknown): boolean => {
-                if (resolvable.resolveResult && Object.getOwnPropertyDescriptor(resolvable.resolveResult, name)?.writable) {
-                    resolvable.resolveResult[name] = value;
-                    return true;
-                }
-                target[name] = value;
-                return true;
-            },
-            /**
-             * Needed to be compatible with any usages of instanceof in utils/azureutils
-             *
-             * If resolved returns AzExtTreeItem or AzExtParentTreeItem depending on if resolveResult has loadMoreChildrenImpl defined
-             * If not resolved, returns AppResourceTreeItem
-             */
-            getPrototypeOf: (target: AppResourceTreeItem): AppResourceTreeItem | AzExtParentTreeItem | AzExtTreeItem => {
-                if (resolvable?.resolveResult) {
-                    return resolvable.resolveResult.loadMoreChildrenImpl ? AzExtParentTreeItem.prototype : AzExtTreeItem.prototype
-                }
-                return target;
-            }
-        }
-        return new Proxy(resolvable, providerHandler);
+        return createResolvableProxy(resolvable);
     }
 
     public get name(): string {
@@ -114,7 +89,7 @@ export class AppResourceTreeItem extends ResolvableTreeItemBase implements Group
     }
 
     public get iconPath(): TreeItemIconPath {
-        return getIconPath(this.data.type, this.data.kind);
+        return getIconPath(this.data.azExtResourceType);
     }
 
     public get parent(): GroupTreeItemBase | undefined {
@@ -128,9 +103,10 @@ export class AppResourceTreeItem extends ResolvableTreeItemBase implements Group
         // do nothing as we only want to return parent dynamically
     }
 
-    public async refreshImpl(): Promise<void> {
+    public async refreshImpl(context: IActionContext): Promise<void> {
         this.mTime = Date.now();
         ext.tagFS.fireSoon({ type: FileChangeType.Changed, item: this });
+        await super.refreshImpl(context);
     }
 
     public mapSubGroupConfigTree(context: IActionContext,
@@ -159,4 +135,35 @@ export class AppResourceTreeItem extends ResolvableTreeItemBase implements Group
     }
 }
 
+type Resolvable<T> = T & {
+    resolveResult: ResolvedAppResourceBase | null | undefined;
+}
 
+export function createResolvableProxy<T extends AzExtParentTreeItem>(resolvable: Resolvable<T>): T {
+    const providerHandler: ProxyHandler<Resolvable<T>> = {
+        get: (target: Resolvable<T>, name: string): unknown => {
+            return resolvable?.resolveResult?.[name] ?? target[name];
+        },
+        set: (target: Resolvable<T>, name: string, value: unknown): boolean => {
+            if (resolvable.resolveResult && Object.getOwnPropertyDescriptor(resolvable.resolveResult, name)?.writable) {
+                resolvable.resolveResult[name] = value;
+                return true;
+            }
+            target[name] = value;
+            return true;
+        },
+        /**
+         * Needed to be compatible with any usages of instanceof in utils/azureutils
+         *
+         * If resolved returns AzExtTreeItem or AzExtParentTreeItem depending on if resolveResult has loadMoreChildrenImpl defined
+         * If not resolved, returns AppResourceTreeItem
+         */
+        getPrototypeOf: (target: Resolvable<T>): AppResourceTreeItem | AzExtParentTreeItem | AzExtTreeItem => {
+            if (resolvable?.resolveResult) {
+                return resolvable.resolveResult.loadMoreChildrenImpl ? AzExtParentTreeItem.prototype : AzExtTreeItem.prototype
+            }
+            return target;
+        }
+    }
+    return new Proxy(resolvable, providerHandler);
+}
