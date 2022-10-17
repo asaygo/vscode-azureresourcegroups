@@ -73,14 +73,11 @@ export class ApplicationResourceTreeDataProvider extends ResourceTreeDataProvide
                 if (subscriptionsResult.selectedSubscriptions.length === 0) {
                     return [new GenericItem(localize('noSubscriptions', 'Select Subscriptions...'), { commandId: 'azure-account.selectSubscriptions' })]
                 } else {
-                    // TODO: This needs to be environment-specific (in terms of default scopes).
-                    const session = await vscode.authentication.getSession('microsoft', ['https://management.azure.com/.default', 'offline_access'], { createIfNone: true });
-
                     return subscriptionsResult.selectedSubscriptions.map(
                         subscription => {
                             const s = {
                                 authentication: {
-                                    getSession: () => session
+                                    getSession: () => subscription.getSession()
                                 },
                                 displayName: subscription.displayName,
                                 environment: {} as Environment /* TODO */,

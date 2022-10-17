@@ -1,7 +1,7 @@
 import * as arm from '@azure/arm-subscriptions';
 import { uiUtils } from '@microsoft/vscode-azext-azureutils';
-import { settingUtils } from '../../../utils/settingUtils';
 import * as vscode from 'vscode';
+import { settingUtils } from '../../../utils/settingUtils';
 
 export interface AzureSubscription {
     readonly displayName: string;
@@ -48,18 +48,29 @@ export class VSCodeAzureSubscriptionProvider extends vscode.Disposable implement
             return { status: AzureSubscriptionStatus.LoggedOut };
         }
 
-        let session: vscode.AuthenticationSession | undefined = undefined;
+        // Try to get the default session...
+        let session = await this.getSession();
+
+        if (!session) {
+            return { status: AzureSubscriptionStatus.LoggedOut };
+        }
 
         const client: arm.SubscriptionClient = new arm.SubscriptionClient(
             {
                 async getToken(scopes) {
                     scopes = Array.isArray(scopes) ? scopes : [scopes];
-                    session = await vscode.authentication.getSession('microsoft', scopes, { createIfNone: true });
 
-                    return {
-                        token: session.accessToken,
-                        expiresOnTimestamp: 0
-                    };
+                    // Try to get a session that best matches any additional requested scopes...
+                    session = await vscode.authentication.getSession('microsoft', scopes);
+
+                    if (session) {
+                        return {
+                            token: session.accessToken,
+                            expiresOnTimestamp: 0
+                        };
+                    }
+
+                    return null;
                 },
             },
             {
@@ -81,19 +92,19 @@ export class VSCodeAzureSubscriptionProvider extends vscode.Disposable implement
     }
 
     async logIn(): Promise<void> {
-        await this.storage.update('isLoggedIn', true);
+        const session = await this.getSession(true);
 
-        this._onSubscriptionsChanged.fire();
+        if (session) {
+            await this.updateStatus(true);
+        }
     }
 
     async logOut(): Promise<void> {
-        await this.storage.update('isLoggedIn', false);
-
-        this._onSubscriptionsChanged.fire();
+        await this.updateStatus(false);
     }
 
     async selectSubscriptions(subscriptionIds: string[] | undefined): Promise<void> {
-        await settingUtils.updateGlobalSetting<string[] | undefined>('selectedSubscriptions', subscriptionIds);
+        await this.updateSelectedSubscriptions(subscriptionIds);
 
         this._onSubscriptionsChanged.fire();
     }
@@ -102,6 +113,24 @@ export class VSCodeAzureSubscriptionProvider extends vscode.Disposable implement
 
     private isLoggedIn(): boolean {
         return this.storage.get('isLoggedIn', false);
+    }
+
+    private getSession(createNew: boolean = false): Thenable<vscode.AuthenticationSession | undefined> {
+        return vscode.authentication.getSession('microsoft', ['https://management.azure.com/.default'], { clearSessionPreference: createNew, createIfNone: createNew });
+    }
+
+    private async updateStatus(isLoggedIn: boolean): Promise<void> {
+        await this.storage.update('isLoggedIn', isLoggedIn);
+
+        if (!isLoggedIn) {
+            await this.updateSelectedSubscriptions(undefined);
+        }
+
+        this._onSubscriptionsChanged.fire();
+    }
+
+    private updateSelectedSubscriptions(subscriptionsIds: string[] | undefined): Promise<void> {
+        return settingUtils.updateGlobalSetting<string[] | undefined>('selectedSubscriptions', subscriptionsIds);
     }
 }
 
