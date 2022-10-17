@@ -599,6 +599,7 @@
     "dependencies": {
         "@azure/arm-resources": "5.0.0",
         "@azure/arm-resources-profile-2020-09-01-hybrid": "^2.0.0",
+        "@azure/arm-subscriptions": "^5.0.1",
         "@microsoft/vscode-azext-azureutils": "^0.3.4",
         "@microsoft/vscode-azext-utils": "^0.3.14",
         "fs-extra": "^8.1.0",
