@@ -3,10 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
 import { AzExtTreeItem, IActionContext, openUrl, registerCommand, registerErrorHandler, registerReportIssueCommand } from '@microsoft/vscode-azext-utils';
+import * as vscode from 'vscode';
 import { commands } from 'vscode';
+import { AzureSubscriptionProvider } from '../api/v2/subscriptions/AzureSubscriptionProvider';
 import { ext } from '../extensionVariables';
+import { logIn } from './accounts/logIn';
+import { logOut } from './accounts/logOut';
+import { selectSubscriptions } from './accounts/selectSubscriptions';
 import { clearActivities } from './activities/clearActivities';
 import { createResource } from './createResource';
 import { createResourceGroup } from './createResourceGroup';
@@ -29,7 +33,13 @@ import { refreshWorkspace } from './workspace/refreshWorkspace';
 
 export function registerCommands(
     refreshEventEmitter: vscode.EventEmitter<void>,
+    subscriptionProvider: AzureSubscriptionProvider,
     onRefreshWorkspace: () => void): void {
+
+    registerCommand('azureResourceGroups.accounts.logIn', (context: IActionContext) => logIn(context, subscriptionProvider));
+    registerCommand('azureResourceGroups.accounts.logOut', (context: IActionContext) => logOut(context, subscriptionProvider));
+    registerCommand('azureResourceGroups.accounts.selectSubscriptions', (context: IActionContext) => selectSubscriptions(context, subscriptionProvider));
+
     registerCommand('azureResourceGroups.createResourceGroup', createResourceGroup);
     registerCommand('azureResourceGroups.deleteResourceGroup', deleteResourceGroup);
     registerCommand('azureResourceGroups.deleteResourceGroupV2', deleteResourceGroupV2);

@@ -30,6 +30,9 @@
     "preview": true,
     "activationEvents": [
         "onFileSystem:azureResourceGroups",
+        "onCommand:zureResourceGroups.accounts.logIn",
+        "onCommand:zureResourceGroups.accounts.logOut",
+        "onCommand:zureResourceGroups.accounts.selectSubscriptions",
         "onCommand:azureResourceGroups.createResourceGroup",
         "onCommand:azureResourceGroups.deleteResourceGroup",
         "onCommand:azureResourceGroups.deleteResourceGroupV2",
@@ -62,6 +65,21 @@
             ]
         },
         "commands": [
+            {
+                "command": "azureResourceGroups.accounts.logIn",
+                "title": "%azureResourceGroups.accounts.logIn%",
+                "category": "Azure"
+            },
+            {
+                "command": "azureResourceGroups.accounts.logOut",
+                "title": "%azureResourceGroups.accounts.logOut%",
+                "category": "Azure"
+            },
+            {
+                "command": "azureResourceGroups.accounts.selectSubscriptions",
+                "title": "%azureResourceGroups.accounts.selectSubscriptions%",
+                "category": "Azure"
+            },
             {
                 "command": "azureResourceGroups.createResourceGroup",
                 "title": "%azureResourceGroups.createResourceGroup%",
@@ -309,7 +327,7 @@
                     "group": "inline"
                 },
                 {
-                    "command": "azureResourceGroups.selectSubscriptions",
+                    "command": "azureResourceGroups.accounts.selectSubscriptions",
                     "when": "view == azureResourceGroupsV2 && viewItem == azureextensionui.azureSubscription",
                     "group": "inline"
                 },
@@ -493,6 +511,13 @@
                         "type": "boolean",
                         "description": "%azureResourceGroups.autoOpenActivityPanel%",
                         "default": true
+                    },
+                    "azureResourceGroups.selectedSubscriptions": {
+                        "type": "array",
+                        "description": "%azureResourceGroups.selectedSubscriptions%",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             }

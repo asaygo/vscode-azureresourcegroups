@@ -104,7 +104,7 @@ export class ApplicationResourceTreeDataProvider extends ResourceTreeDataProvide
                     new GenericItem(
                         localize('signInLabel', 'Sign in to Azure...'),
                         {
-                            commandId: 'azure-account.login',
+                            commandId: 'azureResourceGroups.accounts.logIn',
                             iconPath: new vscode.ThemeIcon('sign-in')
                         }),
                     new GenericItem(

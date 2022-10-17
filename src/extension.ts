@@ -20,6 +20,7 @@ import { revealTreeItem } from './api/revealTreeItem';
 import { DefaultApplicationResourceProvider } from './api/v2/DefaultApplicationResourceProvider';
 import { ResourceGroupsExtensionManager } from './api/v2/ResourceGroupsExtensionManager';
 import { ApplicationResourceProviderManager, WorkspaceResourceProviderManager } from './api/v2/ResourceProviderManagers';
+import { VSCodeAzureSubscriptionProvider } from './api/v2/subscriptions/AzureSubscriptionProvider';
 import { AzureResourcesApiManager } from './api/v2/v2AzureResourcesApi';
 import { V2AzureResourcesApiImplementation } from './api/v2/v2AzureResourcesApiImplementation';
 import { AzureResourceProvider } from './AzureResourceProvider';
@@ -64,6 +65,10 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
     context.subscriptions.push(refreshWorkspaceEmitter);
 
+    const subscriptionProvider = new VSCodeAzureSubscriptionProvider(context.globalState);
+
+    context.subscriptions.push(subscriptionProvider);
+
     await callWithTelemetryAndErrorHandling('azureResourceGroups.activate', async (activateContext: IActionContext) => {
         activateContext.telemetry.properties.isActivationEvent = 'true';
         activateContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
@@ -105,7 +110,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
         context.subscriptions.push(ext.activationManager = new ExtensionActivationManager());
 
-        registerCommands(refreshEventEmitter, () => refreshWorkspaceEmitter.fire());
+        registerCommands(refreshEventEmitter, subscriptionProvider, () => refreshWorkspaceEmitter.fire());
         registerApplicationResourceProvider(azureResourceProviderId, new AzureResourceProvider());
         registerApplicationResourceResolver('vscode-azureresourcegroups.wrapperResolver', wrapperResolver);
         registerApplicationResourceResolver('vscode-azureresourcegroups.installableAppResourceResolver', installableAppResourceResolver);
@@ -135,7 +140,8 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         context,
         branchDataProviderManager,
         refreshEventEmitter.event,
-        applicationResourceProviderManager);
+        applicationResourceProviderManager,
+        subscriptionProvider);
 
     registerWorkspaceTreeV2(
         workspaceResourceBranchDataProviderManager,

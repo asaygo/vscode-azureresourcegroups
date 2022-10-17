@@ -5,7 +5,7 @@
 
 import * as vscode from 'vscode';
 import { ApplicationResourceProviderManager } from '../../../api/v2/ResourceProviderManagers';
-import { VSCodeAzureSubscriptionProvider } from '../../../api/v2/subscriptions/AzureSubscriptionProvider';
+import { AzureSubscriptionProvider } from '../../../api/v2/subscriptions/AzureSubscriptionProvider';
 import { createBranchDataItemFactory } from '../BranchDataProviderItem';
 import { ResourceGroupsItemCache } from '../ResourceGroupsItemCache';
 import { localize } from './../../../utils/localize';
@@ -18,15 +18,14 @@ export function registerResourceGroupsTreeV2(
     context: vscode.ExtensionContext,
     branchDataProviderManager: ApplicationResourceBranchDataProviderManager,
     refreshEvent: vscode.Event<void>,
-    resourceProviderManager: ApplicationResourceProviderManager): void {
+    resourceProviderManager: ApplicationResourceProviderManager,
+    subscriptionProvider: AzureSubscriptionProvider): void {
     const itemCache = new ResourceGroupsItemCache();
     const branchDataItemFactory = createBranchDataItemFactory(itemCache);
     const groupingItemFactory = createGroupingItemFactory(branchDataItemFactory, resource => branchDataProviderManager.getProvider(resource.resourceType));
     const resourceGroupingManager = new ApplicationResourceGroupingManager(groupingItemFactory);
-    const subscriptionProvider = new VSCodeAzureSubscriptionProvider();
 
     context.subscriptions.push(resourceGroupingManager);
-    context.subscriptions.push(subscriptionProvider);
 
     const treeDataProvider = new ApplicationResourceTreeDataProvider(
         branchDataProviderManager.onDidChangeTreeData,
