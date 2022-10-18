@@ -57,24 +57,20 @@ export class VSCodeAzureSubscriptionProvider extends vscode.Disposable implement
 
         const client: arm.SubscriptionClient = new arm.SubscriptionClient(
             {
-                async getToken(scopes) {
-                    scopes = Array.isArray(scopes) ? scopes : [scopes];
+                getToken:
+                    async scopes => {
+                        // Try to get a session that best matches any additional requested scopes...
+                        session = await this.getSession({ scopes });
 
-                    // Try to get a session that best matches any additional requested scopes...
-                    session = await vscode.authentication.getSession('microsoft', scopes);
+                        if (session) {
+                            return {
+                                token: session.accessToken,
+                                expiresOnTimestamp: 0
+                            };
+                        }
 
-                    if (session) {
-                        return {
-                            token: session.accessToken,
-                            expiresOnTimestamp: 0
-                        };
+                        return null;
                     }
-
-                    return null;
-                },
-            },
-            {
-                // baseUri: 'https://management.azure.com/.default'
             });
 
         const l = await uiUtils.listAllIterator(client.subscriptions.list());
@@ -84,6 +80,36 @@ export class VSCodeAzureSubscriptionProvider extends vscode.Disposable implement
         const selectedSubscriptionIds = settingUtils.getGlobalSetting<string[] | undefined>('selectedSubscriptions');
         const selectedSubscriptions = allSubscriptions.filter(s => selectedSubscriptionIds === undefined || selectedSubscriptionIds.includes(s.id));
 
+        const t = await uiUtils.listAllIterator(client.tenants.list());
+
+        if (t && t.length) {
+            const tenant = t[0];
+
+            if (tenant.tenantId) {
+                const tenantClient: arm.SubscriptionClient = new arm.SubscriptionClient(
+                    {
+                        getToken: async scopes => {
+                            const tenantSession = await this.getSession({ scopes, tenantId: tenant.tenantId });
+
+                            if (tenantSession) {
+                                return {
+                                    token: tenantSession.accessToken,
+                                    expiresOnTimestamp: 0
+                                };
+                            }
+
+                            return null;
+                        },
+                    });
+
+                    const tenantSubscriptions = await uiUtils.listAllIterator(tenantClient.subscriptions.list());
+
+                    if (tenantSubscriptions) {
+                        // TODO: Add tenant subscriptions to allSubscriptions
+                    }
+                }
+        }
+
         return {
             status: session ? AzureSubscriptionStatus.LoggedIn : AzureSubscriptionStatus.LoggedOut,
             allSubscriptions,
@@ -92,7 +118,7 @@ export class VSCodeAzureSubscriptionProvider extends vscode.Disposable implement
     }
 
     async logIn(): Promise<void> {
-        const session = await this.getSession(true);
+        const session = await this.getSession({ createNew: true });
 
         if (session) {
             await this.updateStatus(true);
@@ -115,8 +141,32 @@ export class VSCodeAzureSubscriptionProvider extends vscode.Disposable implement
         return this.storage.get('isLoggedIn', false);
     }
 
-    private getSession(createNew: boolean = false): Thenable<vscode.AuthenticationSession | undefined> {
-        return vscode.authentication.getSession('microsoft', ['https://management.azure.com/.default'], { clearSessionPreference: createNew, createIfNone: createNew });
+    private getSession(options?: { createNew?: boolean, scopes?: string | string[], tenantId?: string }): Thenable<vscode.AuthenticationSession | undefined> {
+        const scopeSet = new Set<string>(['https://management.azure.com/.default']);
+
+        if (options) {
+            if (typeof options.scopes === 'string') {
+                scopeSet.add(options.scopes);
+            }
+
+            if (Array.isArray(options.scopes)) {
+                for (const scope of options.scopes) {
+                    scopeSet.add(scope);
+                }
+            }
+
+            if (options.tenantId) {
+                scopeSet.add(`VSCODE_TENANT:${options.tenantId}`);
+            }
+        }
+
+        return vscode.authentication.getSession(
+            'microsoft',
+            Array.from(scopeSet),
+            {
+                clearSessionPreference: options?.createNew,
+                createIfNone: options?.createNew
+            });
     }
 
     private async updateStatus(isLoggedIn: boolean): Promise<void> {
@@ -133,4 +183,3 @@ export class VSCodeAzureSubscriptionProvider extends vscode.Disposable implement
         return settingUtils.updateGlobalSetting<string[] | undefined>('selectedSubscriptions', subscriptionsIds);
     }
 }
-

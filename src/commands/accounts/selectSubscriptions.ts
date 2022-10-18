@@ -7,7 +7,7 @@ import { IActionContext } from "@microsoft/vscode-azext-utils";
 import * as vscode from 'vscode';
 import { AzureSubscription, AzureSubscriptionProvider, AzureSubscriptionStatus } from "../../api/v2/subscriptions/AzureSubscriptionProvider";
 
-export async function selectSubscriptions(context: IActionContext, subscriptionProvider: AzureSubscriptionProvider): Promise<void> {
+export async function selectSubscriptions(_context: IActionContext, subscriptionProvider: AzureSubscriptionProvider): Promise<void> {
     const results = await subscriptionProvider.getSubscriptions();
 
     if (results.status === AzureSubscriptionStatus.LoggedIn) {
