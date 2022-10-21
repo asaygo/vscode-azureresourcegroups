@@ -6,8 +6,11 @@
 'use strict';
 
 import { registerAzureUtilsExtensionVariables } from '@microsoft/vscode-azext-azureutils';
+<<<<<<< HEAD
 import { AzExtTreeDataProvider, AzExtTreeItem, callWithTelemetryAndErrorHandling, createApiProvider, createAzExtOutputChannel, IActionContext, registerEvent, registerUIExtensionVariables } from '@microsoft/vscode-azext-utils';
-import { AzureExtensionApiProvider } from '@microsoft/vscode-azext-utils/api';
+=======
+import { callWithTelemetryAndErrorHandling, createAzExtOutputChannel, IActionContext, registerUIExtensionVariables } from '@microsoft/vscode-azext-utils';
+>>>>>>> 014b579 (WIP for vscode.dev)
 import type { AppResourceResolver } from '@microsoft/vscode-azext-utils/hostapi';
 import * as vscode from 'vscode';
 import { ActivityLogTreeItem } from './activityLog/ActivityLogsTreeItem';
@@ -35,18 +38,20 @@ import { WorkspaceTreeItem } from './tree/WorkspaceTreeItem';
 import { ExtensionActivationManager } from './utils/ExtensionActivationManager';
 import { localize } from './utils/localize';
 
-export async function activateInternal(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }, ignoreBundle?: boolean): Promise<AzureExtensionApiProvider> {
+let v2Api: V2AzureResourcesApiImplementation | undefined = undefined;
+
+export async function activate(context: vscode.ExtensionContext, _perfStats: { loadStartTime: number; loadEndTime: number }, ignoreBundle?: boolean): Promise<AzureResourcesApiManager> {
     ext.context = context;
     ext.ignoreBundle = ignoreBundle;
     ext.outputChannel = createAzExtOutputChannel('Azure Resource Groups', ext.prefix);
     context.subscriptions.push(ext.outputChannel);
 
-    registerUIExtensionVariables(ext);
+    await registerUIExtensionVariables(ext);
     registerAzureUtilsExtensionVariables(ext);
 
     await callWithTelemetryAndErrorHandling('azureResourceGroups.activate', async (activateContext: IActionContext) => {
         activateContext.telemetry.properties.isActivationEvent = 'true';
-        activateContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
+        // activateContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
 
         const subscriptionProvider = new VSCodeAzureSubscriptionProvider(context.globalState);
 
@@ -112,7 +117,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     ]);
 }
 
-export function deactivateInternal(): void {
+export function deactivate(): void {
     ext.diagnosticWatcher?.dispose();
 }
 

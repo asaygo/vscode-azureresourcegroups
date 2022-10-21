@@ -9,11 +9,12 @@ import { ext } from "../extensionVariables";
 import { SubscriptionTreeItem } from "../tree/SubscriptionTreeItem";
 
 export async function pickAppResource<T extends AzExtTreeItem>(context: ITreeItemPickerContext, options?: PickAppResourceOptions): Promise<T> {
-    const subscription: SubscriptionTreeItem = await ext.appResourceTree.showTreeItemPicker(SubscriptionTreeItem.contextValue, context);
+    context.canPickMany = false;
+    const subscription = await ext.appResourceTree.showTreeItemPicker(SubscriptionTreeItem.contextValue, context) as SubscriptionTreeItem;
     const appResource = await subscription.pickAppResource(context, options);
 
     if (options?.expectedChildContextValue) {
-        return ext.appResourceTree.showTreeItemPicker(options.expectedChildContextValue, context, appResource);
+        return ext.appResourceTree.showTreeItemPicker(options.expectedChildContextValue, context, appResource) as unknown as T;
     } else {
         return appResource as unknown as T;
     }
