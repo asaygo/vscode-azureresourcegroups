@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AzExtParentTreeItem, AzExtServiceClientCredentials, AzExtTreeItem, GenericTreeItem, IActionContext, ISubscriptionContext } from '@microsoft/vscode-azext-utils';
+import type { Environment } from '@azure/ms-rest-azure-env';
+import { AzExtParentTreeItem, AzExtServiceClientCredentials, AzExtTreeItem, callWithTelemetryAndErrorHandling, GenericTreeItem, IActionContext, ISubscriptionContext } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { AzureSubscription, AzureSubscriptionProvider, AzureSubscriptionStatus } from '../services/AzureSubscriptionProvider';
 import { localize } from '../utils/localize';
 import { SubscriptionTreeItem } from './SubscriptionTreeItem';
-import type { Environment } from '@azure/ms-rest-azure-env';
 
 /**
  * Converts a VS Code authentication session to an Azure Track 1 & 2 compatible compatible credential.
@@ -54,8 +54,15 @@ export function createSubscriptionContext(subscription: AzureSubscription): ISub
 }
 
 export class AzureAccountTreeItem extends AzExtParentTreeItem {
+    private readonly subscriptionsSubscription: vscode.Disposable;
+
     public constructor(private readonly subscriptionProvider: AzureSubscriptionProvider) {
         super(undefined);
+
+        this.subscriptionsSubscription = this.subscriptionProvider.onSubscriptionsChanged(
+            () => callWithTelemetryAndErrorHandling(
+                'azureAccountTreeItem.onSubscriptionsChanged',
+                context => this.refresh(context)));
     }
 
     public async loadMoreChildrenImpl(_clearCache: boolean, _context: IActionContext): Promise<AzExtTreeItem[]> {
@@ -133,6 +140,6 @@ export class AzureAccountTreeItem extends AzExtParentTreeItem {
     public contextValue: string;
 
     public dispose(): void {
-        // TODO: No-op (for now)
+        this.subscriptionsSubscription.dispose();
     }
 }
