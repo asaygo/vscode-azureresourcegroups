@@ -16,7 +16,7 @@ let perfStats = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 
-const extension = require('./dist/web/azure-resources.js');
+const extension = require('./dist/extension.bundle');
 
 async function activate(ctx) {
     return await extension.activate(ctx, perfStats);

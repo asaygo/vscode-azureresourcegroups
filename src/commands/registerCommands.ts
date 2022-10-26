@@ -73,10 +73,6 @@ export function registerCommands(subscriptionProvider: AzureSubscriptionProvider
         await openUrl(url)
     });
 
-    registerCommand('azureWorkspace.refresh', async context => {
-        onRefreshWorkspace();
-
-        await refreshWorkspace(context);
-    });
+    registerCommand('azureWorkspace.refresh', refreshWorkspace);
     registerCommand('azureWorkspace.loadMore', async (context: IActionContext, node: AzExtTreeItem) => await ext.workspaceTree.loadMore(node, context));
 }
