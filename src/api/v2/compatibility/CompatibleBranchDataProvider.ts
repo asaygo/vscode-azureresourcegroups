@@ -7,7 +7,6 @@ import { AzExtTreeItem, ISubscriptionContext } from '@microsoft/vscode-azext-uti
 import type { AppResource, AppResourceResolver } from '@microsoft/vscode-azext-utils/hostapi';
 import type { ApplicationResource, ResourceModelBase } from '../../../api/v2/v2AzureResourcesApi';
 import { createSubscriptionContext } from '../../../utils/v2/credentialsUtils';
-import { getApplicationResourceId } from '../../../utils/v2/getApplicationResourceId';
 import { CompatibleResolvedApplicationResourceTreeItem } from './CompatibleApplicationResourceTreeItem';
 import { CompatibleBranchDataProviderBase } from './CompatibleBranchDataProviderBase';
 
@@ -39,9 +38,9 @@ export class CompatibleBranchDataProvider<TResource extends ApplicationResource,
         });
 
         // override id to be the Azure resource id minus the subscription
-        const id = getApplicationResourceId(fullId);
+        // const id = getApplicationResourceId(fullId);
         Object.defineProperty(resolved, 'id', {
-            get: () => id,
+            get: () => fullId,
         });
 
         return CompatibleResolvedApplicationResourceTreeItem.Create(element, resolved, subscriptionContext, this, element) as unknown as TModel;

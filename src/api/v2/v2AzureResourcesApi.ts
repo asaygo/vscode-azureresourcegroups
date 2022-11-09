@@ -5,6 +5,7 @@
 
 import type { Environment } from '@azure/ms-rest-azure-env';
 import { AzExtResourceType } from '@microsoft/vscode-azext-utils';
+import { Activity } from '@microsoft/vscode-azext-utils/hostapi';
 import * as vscode from 'vscode';
 import { ResourceGroupsItem } from '../../tree/v2/ResourceGroupsItem';
 
@@ -69,12 +70,7 @@ export interface BranchDataProvider<TResource extends ResourceBase, TModel exten
      */
     getChildren(element: TModel): vscode.ProviderResult<TModel[]>;
 
-    /**
-     * A branch data provider need not (and should not) implement this function.
-     *
-     * @remarks While VS Code would normally call this function on a tree data provider, it is not used by the Azure Resource extension as part of a branch data provider.
-     */
-    getParent?: never;
+    getParent?(element: TModel): vscode.ProviderResult<TModel>;
 
     /**
      * Called to get the provider's model element for a specific resource.
@@ -269,6 +265,8 @@ export interface V2AzureResourcesApi extends AzureResourcesApiBase {
      * @param resourceId The ID of the resource to reveal.
      */
     revealResource(resourceId: string): Promise<void>;
+
+    registerActivity(activity: Activity): Promise<void>;
 
     /**
      * Registers a provider of application resources.

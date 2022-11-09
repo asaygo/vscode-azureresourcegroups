@@ -14,6 +14,7 @@ export interface ResourceGroupsItem {
      * If defined, the item id will be excluded from paths of child items
      */
     isAncestorOf?(id: string): boolean;
+    getParent?(): vscode.ProviderResult<ResourceGroupsItem>;
 
     getChildren(): vscode.ProviderResult<ResourceGroupsItem[]>;
     getTreeItem(): vscode.TreeItem | Thenable<vscode.TreeItem>;

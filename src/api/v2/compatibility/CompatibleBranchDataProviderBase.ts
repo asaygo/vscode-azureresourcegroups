@@ -5,15 +5,19 @@
 
 import { AzExtParentTreeItem, AzExtTreeDataProvider, AzExtTreeItem, IFindTreeItemContext, ITreeItemPickerContext } from "@microsoft/vscode-azext-utils";
 import * as vscode from 'vscode';
+import { ResourceGroupsItemCache } from "../../../tree/v2/ResourceGroupsItemCache";
 import { BranchDataProvider, ResourceBase, ResourceModelBase } from "../v2AzureResourcesApi";
 
-export class CompatibleBranchDataProviderBase<TResource extends ResourceBase, TModel extends AzExtTreeItem & ResourceModelBase> extends AzExtTreeDataProvider implements BranchDataProvider<TResource, TModel> {
+export abstract class CompatibleBranchDataProviderBase<TResource extends ResourceBase, TModel extends AzExtTreeItem & ResourceModelBase> extends AzExtTreeDataProvider implements BranchDataProvider<TResource, TModel> {
     protected readonly overrideOnDidChangeTreeDataEmitter = new vscode.EventEmitter<TModel | undefined>();
+
+    private readonly itemCache = new ResourceGroupsItemCache();
 
     public constructor(loadMoreCommandId: string) {
         // Using `{}` here so property assignment doesn't throw
-        super({ valuesToMask: [] } as unknown as AzExtParentTreeItem, loadMoreCommandId);
+        super({ valuesToMask: [], parent: undefined } as unknown as AzExtParentTreeItem, loadMoreCommandId);
     }
+    abstract getResourceItem(element: TResource): TModel | Thenable<TModel>;
 
     //#region TreeDataProvider
 
@@ -26,7 +30,6 @@ export class CompatibleBranchDataProviderBase<TResource extends ResourceBase, TM
         // Do nothing
     }
 
-    // @ts-expect-error `getParent` is not meant to be defined by `BranchDataProvider`s but is already defined by `AzExtTreeDataProvider`
     public override getParent(_treeItem: TModel): Promise<TModel> {
         throw new Error('Use the Resources extension API to do getParent');
     }

@@ -8,6 +8,7 @@ import { WorkspaceResourceProvider } from "@microsoft/vscode-azext-utils/hostapi
 import { Disposable } from "vscode";
 import { refreshWorkspace } from "../commands/workspace/refreshWorkspace";
 import { ext } from "../extensionVariables";
+import { CachedBranchDataProvider } from "../tree/v2/BranchDataProviderCache";
 import { CompatibilityWorkspaceResourceProvider } from "./v2/compatibility/CompatibilityWorkspaceResourceProvider";
 import { CompatibleWorkspaceResourceBranchDataProvider } from "./v2/compatibility/CompatibleWorkspaceResourceBranchDataProvider";
 import { BranchDataProvider, WorkspaceResource } from "./v2/v2AzureResourcesApi";
@@ -22,7 +23,7 @@ export function registerWorkspaceResourceProvider(resourceType: string, provider
         void refreshWorkspace();
 
         ext.v2.api.registerWorkspaceResourceProvider(new CompatibilityWorkspaceResourceProvider(resourceType, provider));
-        ext.v2.api.registerWorkspaceResourceBranchDataProvider(resourceType, new CompatibleWorkspaceResourceBranchDataProvider('azureWorkspace.loadMore') as unknown as BranchDataProvider<WorkspaceResource, AzExtTreeItem>)
+        ext.v2.api.registerWorkspaceResourceBranchDataProvider(resourceType, new CachedBranchDataProvider(new CompatibleWorkspaceResourceBranchDataProvider('azureWorkspace.loadMore') as unknown as BranchDataProvider<WorkspaceResource, AzExtTreeItem>))
 
         return new Disposable(() => {
             delete workspaceResourceProviders[resourceType];
