@@ -7,7 +7,7 @@ import { AzExtResourceType, AzExtTreeItem } from "@microsoft/vscode-azext-utils"
 import { AppResourceResolver } from "@microsoft/vscode-azext-utils/hostapi";
 import { Disposable } from "vscode";
 import { ext } from "../extensionVariables";
-import { CompatibleApplicationResourceBranchDataProvider } from "./v2/compatibility/CompatibleApplicationResourceBranchDataProvider";
+import { CompatibleApplicationResourceBranchDataProvider } from "./v2/compatibility/application/CompatibleApplicationResourceBranchDataProvider";
 import { ApplicationResource, BranchDataProvider } from "./v2/v2AzureResourcesApi";
 
 export const applicationResourceResolvers: Record<string, AppResourceResolver> = {};

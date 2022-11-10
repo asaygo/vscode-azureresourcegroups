@@ -5,10 +5,10 @@
 
 import { AzExtTreeItem, ISubscriptionContext } from '@microsoft/vscode-azext-utils';
 import type { AppResource, AppResourceResolver } from '@microsoft/vscode-azext-utils/hostapi';
-import { createSubscriptionContext } from '../../../utils/v2/credentialsUtils';
-import type { ApplicationResource, ResourceModelBase } from '../v2AzureResourcesApi';
+import { createSubscriptionContext } from '../../../../utils/v2/credentialsUtils';
+import type { ApplicationResource, ResourceModelBase } from '../../v2AzureResourcesApi';
+import { CompatibleBranchDataProviderBase } from '../CompatibleBranchDataProviderBase';
 import { CompatibleResolvedApplicationResourceTreeItem } from './CompatibleApplicationResourceTreeItem';
-import { CompatibleBranchDataProviderBase } from './CompatibleBranchDataProviderBase';
 
 /**
  * Provides compatibility between an `AppResourceResolver` (v1) and a `BranchDataProvider` (v2)
