@@ -37,7 +37,7 @@ function appendContextValues(originalValues: string | undefined, optionsValues: 
 
 export class BranchDataProviderItem implements ResourceGroupsItem, WrappedResourceModel {
     constructor(
-        protected readonly branchItem: ResourceModelBase,
+        private readonly branchItem: ResourceModelBase,
         private readonly branchDataProvider: BranchDataProvider<ResourceBase, ResourceModelBase>,
         private readonly itemCache: ResourceGroupsItemCache,
         private readonly options?: BranchDataItemOptions) {
@@ -72,7 +72,7 @@ export class BranchDataProviderItem implements ResourceGroupsItem, WrappedResour
         };
     }
 
-    unwrap<T>(): T {
+    unwrap<T extends ResourceModelBase>(): T | undefined {
         return this.branchItem as T;
     }
 }
