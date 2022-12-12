@@ -23,6 +23,7 @@ import { DefaultAzureResourceProvider } from './api/v2/DefaultAzureResourceProvi
 import { ResourceGroupsExtensionManager } from './api/v2/ResourceGroupsExtensionManager';
 import { AzureResourceProviderManager, WorkspaceResourceProviderManager } from './api/v2/ResourceProviderManagers';
 import { AzureResourcesApiManager } from './api/v2/v2AzureResourcesApi';
+import { defaultAzureResourcesServiceFactory } from './AzureService';
 import { registerCommands } from './commands/registerCommands';
 import { registerTagDiagnostics } from './commands/tags/registerTagDiagnostics';
 import { TagFileSystem } from './commands/tags/TagFileSystem';
@@ -81,7 +82,8 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
     const azureResourceProviderManager = new AzureResourceProviderManager(() => extensionManager.activateApplicationResourceProviders());
 
-    azureResourceProviderManager.addResourceProvider(new DefaultAzureResourceProvider());
+    ext.v2.azureResourcesServiceFactory = defaultAzureResourcesServiceFactory;
+    azureResourceProviderManager.addResourceProvider(new DefaultAzureResourceProvider(ext.v2.azureResourcesServiceFactory));
 
     const workspaceResourceBranchDataProviderManager = new WorkspaceResourceBranchDataProviderManager(
         new WorkspaceDefaultBranchDataProvider(),

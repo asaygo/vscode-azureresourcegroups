@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 import { AzureResourceProviderManager } from '../../../api/v2/ResourceProviderManagers';
 import { showHiddenTypesSettingKey } from '../../../constants';
 import { ext } from '../../../extensionVariables';
+import { MockAzureAccount } from '../../../MockAzureAccountApi';
 import { localize } from '../../../utils/localize';
 import { AzureAccountExtensionApi } from '../azure-account.api';
 import { BranchDataItemCache } from '../BranchDataItemCache';
@@ -167,6 +168,12 @@ export class AzureResourceTreeDataProvider extends ResourceTreeDataProviderBase 
     }
 
     private async getAzureAccountExtensionApi(): Promise<AzureAccountExtensionApi | undefined> {
+
+        const mockApi = new MockAzureAccount(vscode);
+        await mockApi.signIn();
+        this.api = mockApi;
+
+
         if (!this.api) {
             const extension = vscode.extensions.getExtension<AzureExtensionApiProvider>('ms-vscode.azure-account');
 
