@@ -16,13 +16,16 @@ import { ExtensionActivationManager } from "./utils/ExtensionActivationManager";
 namespace extEmitters {
     export let onDidChangeFocusedGroup: EventEmitter<void>;
     export let onDidRegisterResolver: EventEmitter<AppResourceResolver>;
-    export let refreshWorkspaceTree: EventEmitter<void>;
-    export let refreshAzureTree: EventEmitter<void>;
 }
 
 namespace extEvents {
     export let onDidChangeFocusedGroup: Event<void>;
     export let onDidRegisterResolver: Event<AppResourceResolver>;
+}
+
+export namespace extActions {
+    export let refreshWorkspaceTree: () => void;
+    export let refreshAzureTree: () => void;
 }
 
 /**
@@ -55,4 +58,6 @@ export namespace ext {
         export let api: AzureResourcesApiInternal;
         export let azureResourcesServiceFactory: AzureResourcesServiceFactory;
     }
+
+    export const actions = extActions;
 }
