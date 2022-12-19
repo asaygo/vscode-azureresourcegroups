@@ -47,12 +47,17 @@ export class MockAzureAccount implements AzureAccountExtensionApi {
             environment: 'environment',
             userId: '',
             tenantId: 'tenantId',
-            credentials2: {},
+            credentials2: {
+                getToken: () => {
+                    return undefined;
+                }
+            },
         } as unknown as AzureSession;
 
         const subscriptionId = randomUUID();
         const mockAzureSubscription: AzureSubscription = {
-            session: session, subscription: {
+            session: session,
+            subscription: {
                 displayName: 'mockSubscription',
                 subscriptionId,
                 id: `/subscriptions/${subscriptionId}`

@@ -85,8 +85,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
     const azureResourceProviderManager = new AzureResourceProviderManager(() => extensionManager.activateApplicationResourceProviders());
 
     ext.v2.azureResourcesServiceFactory = defaultAzureResourcesServiceFactory;
-    ext.v2.azureResourcesServiceFactory = mockAzureResourcesServiceFactory;
-    azureResourceProviderManager.addResourceProvider(new DefaultAzureResourceProvider(ext.v2.azureResourcesServiceFactory));
+    azureResourceProviderManager.addResourceProvider(new DefaultAzureResourceProvider(mockAzureResourcesServiceFactory));
 
     const workspaceResourceBranchDataProviderManager = new WorkspaceResourceBranchDataProviderManager(
         new WorkspaceDefaultBranchDataProvider(),
@@ -107,7 +106,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
     const v2ApiFactory: AzureExtensionApiFactory<AzureResourcesApiInternal> = {
         apiVersion: '2.0.0',
-        createApi: (options: GetApiOptions) => {
+        createApi: (options?: GetApiOptions) => {
             return createWrappedAzureResourcesExtensionApi(
                 {
                     apiVersion: '2.0.0',
@@ -123,7 +122,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
                         registerActivity
                     },
                 },
-                options.extensionId ?? 'unknown'
+                options?.extensionId ?? 'unknown'
             );
         }
     };

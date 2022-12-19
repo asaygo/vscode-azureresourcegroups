@@ -14,9 +14,9 @@ suiteSetup(async function (this: Mocha.Context): Promise<void> {
     this.timeout(1 * 60 * 1000);
 
     await vscode.extensions.getExtension('ms-azuretools.vscode-azureresourcegroups')?.activate();
+    ext.v2.azureResourcesServiceFactory = mockAzureResourcesServiceFactory;
     await vscode.commands.executeCommand('azureResourceGroups.refresh'); // activate the extension before tests begin
     ext.outputChannel = new TestOutputChannel();
-    ext.v2.azureResourcesServiceFactory = mockAzureResourcesServiceFactory;
 
     registerOnActionStartHandler(context => {
         // Use `TestUserInput` by default so we get an error if an unexpected call to `context.ui` occurs, rather than timing out
