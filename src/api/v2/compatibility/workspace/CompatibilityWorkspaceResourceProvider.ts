@@ -22,14 +22,15 @@ export class CompatibilityWorkspaceResourceProvider implements V2WorkspaceResour
             return [];
         }
 
-        const stubParent: AzExtParentTreeItem = {
-            treeDataProvider: this.compatTreeDataProvider,
-            valuesToMask: [],
-            parent: undefined,
-            fullId: '',
-        } as unknown as AzExtParentTreeItem;
-
-        const resources = await this.provider.provideResources(stubParent);
+        const resources = await this.provider.provideResources(
+            // pass in stub parent
+            {
+                treeDataProvider: this.compatTreeDataProvider,
+                valuesToMask: [],
+                parent: undefined,
+                fullId: '', // prevent ids from starting with undefined
+            } as unknown as AzExtParentTreeItem
+        );
 
         if (resources) {
             return resources.map((resource) => {
