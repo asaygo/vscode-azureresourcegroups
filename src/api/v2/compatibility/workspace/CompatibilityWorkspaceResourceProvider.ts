@@ -34,7 +34,7 @@ export class CompatibilityWorkspaceResourceProvider implements V2WorkspaceResour
 
         if (resources) {
             return resources.map((resource) => {
-                const item = Object.assign<AzExtTreeItem, WorkspaceResource>(resource,
+                return Object.assign<AzExtTreeItem, WorkspaceResource>(resource,
                     {
                         // omit id because it's already in the treeItem
                         folder: source,
@@ -42,8 +42,6 @@ export class CompatibilityWorkspaceResourceProvider implements V2WorkspaceResour
                         name: resource.label,
                     } as WorkspaceResource
                 );
-
-                return item;
             });
         }
 
