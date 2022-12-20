@@ -23,7 +23,7 @@ abstract class IntermediateCompatibleAzExtTreeDataProvider extends AzExtTreeData
  */
 export class CompatibleAzExtTreeDataProvider extends IntermediateCompatibleAzExtTreeDataProvider {
     public constructor(private readonly tdp: ResourceTreeDataProviderBase) {
-        super({ valuesToMask: [] } as unknown as AzExtParentTreeItem, undefined as unknown as string);
+        super({ valuesToMask: [], fullId: '' } as unknown as AzExtParentTreeItem, undefined as unknown as string);
     }
 
     public override getParent(treeItem: AzExtTreeItem): Promise<AzExtTreeItem | undefined> {
@@ -54,14 +54,14 @@ export class CompatibleAzExtTreeDataProvider extends IntermediateCompatibleAzExt
         throw new Error('TODO: Implement using new picker approach');
     }
 
-    public override refresh(_context: IActionContext, treeItem?: AzExtTreeItem | undefined): Promise<void> {
+    // public override refresh(_context: IActionContext, treeItem?: AzExtTreeItem | undefined): Promise<void> {
 
-        // Flush the cache at and below the given treeItem
-        // Trigger a refresh at the given treeItem
-        this.tdp.notifyTreeDataChanged(treeItem as unknown as ResourceGroupsItem);
+    //     // Flush the cache at and below the given treeItem
+    //     // Trigger a refresh at the given treeItem
+    //     this.tdp.notifyTreeDataChanged(treeItem as unknown as ResourceGroupsItem);
 
-        return Promise.resolve();
-    }
+    //     return Promise.resolve();
+    // }
 
     public override refreshUIOnly(treeItem: AzExtTreeItem | undefined): void {
 

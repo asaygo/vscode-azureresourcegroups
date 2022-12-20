@@ -18,7 +18,7 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
         protected readonly itemCache: BranchDataItemCache,
         onDidChangeBranchTreeData: vscode.Event<void | ResourceModelBase | ResourceModelBase[] | null | undefined>,
         onDidChangeResource: vscode.Event<ResourceBase | undefined>,
-        onRefresh: vscode.Event<void>,
+        onRefresh: vscode.Event<void | ResourceGroupsItem | ResourceGroupsItem[] | null | undefined>,
         callOnDispose?: () => void) {
         super(
             () => {
@@ -55,7 +55,7 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
                 }
             });
 
-        this.refreshSubscription = onRefresh(() => this.onDidChangeTreeDataEmitter.fire());
+        this.refreshSubscription = onRefresh((e) => this.onDidChangeTreeDataEmitter.fire(e));
 
         // TODO: If only individual resources change, just update the tree related to those resources.
         this.resourceProviderManagerListener = onDidChangeResource(() => this.onDidChangeTreeDataEmitter.fire());
@@ -68,6 +68,8 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
     }
 
     async getTreeItem(element: ResourceGroupsItem): Promise<vscode.TreeItem> {
+        // Convert branch item to resource groups item if treeView.reveal
+        element = this.itemCache.getItemForBranchItem(element) ?? element;
         const treeItem = await element.getTreeItem();
         // TODO: remove this when we're done working with ids
         treeItem.tooltip = treeItem.id;
@@ -82,8 +84,11 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
         return await this.onGetChildren(element);
     }
 
-    getParent(element: ResourceGroupsItem): vscode.ProviderResult<ResourceGroupsItem> {
-        return element.getParent?.();
+    async getParent(element: ResourceGroupsItem): Promise<ResourceGroupsItem | null | undefined> {
+        // Convert branch item to resource groups item if treeView.reveal
+        const item = this.itemCache.getItemForBranchItem(element);
+        const parent = await (item ?? element).getParent?.();
+        return this.itemCache.getItemForBranchItem(parent) ?? parent;
     }
 
     async findItemById(id: string): Promise<ResourceGroupsItem | undefined> {
