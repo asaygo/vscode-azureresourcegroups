@@ -27,6 +27,9 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}",
                 "--extensionDevelopmentPath=${workspaceFolder}/../vscode-azurestorage",
+                "--extensionDevelopmentPath=${workspaceFolder}/../vscode-cosmosdb",
+                "--extensionDevelopmentPath=${workspaceFolder}/../vscode-appservice",
+                "--extensionDevelopmentPath=${workspaceFolder}/../vscode-azurefunctions",
             ],
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
