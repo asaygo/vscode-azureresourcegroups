@@ -28,6 +28,7 @@ export class GroupingItem implements ResourceGroupsItem {
 
     readonly viewProperties?: ViewPropertiesModel;
     readonly tagsModel?: ITagsModel;
+    readonly portalUrl?: vscode.Uri;
 
     constructor(
         public readonly context: ResourceGroupsTreeContext,
@@ -47,6 +48,7 @@ export class GroupingItem implements ResourceGroupsItem {
                 label: resourceGroup.name,
                 data: resourceGroup.raw
             };
+            this.portalUrl = createPortalUrl(resourceGroup.subscription, resourceGroup.id);
         }
     }
 
@@ -86,7 +88,11 @@ export class GroupingItem implements ResourceGroupsItem {
     async getTreeItem(): Promise<vscode.TreeItem> {
         const treeItem = new vscode.TreeItem(this.label, vscode.TreeItemCollapsibleState.Collapsed);
 
-        treeItem.contextValue = createContextValue(this.contextValues ?? []);
+        const contextValues = this.contextValues ?? [];
+        if (this.portalUrl) {
+            contextValues.push('hasPortalUrl');
+        }
+        treeItem.contextValue = createContextValue(contextValues);
         treeItem.description = this.description;
         treeItem.iconPath = this.iconPath;
         treeItem.id = this.id;
