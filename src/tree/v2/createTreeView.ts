@@ -36,13 +36,12 @@ export function createTreeView(viewId: string, options: InternalTreeViewOptions)
     return treeView;
 }
 
-function modifyReveal(treeView: TreeView<ResourceGroupsItem>, _treeDataProvider: ResourceTreeDataProviderBase, itemCache: BranchDataItemCache): void {
+function modifyReveal(treeView: TreeView<ResourceGroupsItem>, treeDataProvider: ResourceTreeDataProviderBase, itemCache: BranchDataItemCache): void {
     (treeView as InternalTreeView)._reveal = treeView.reveal.bind(treeView) as typeof treeView.reveal;
 
     treeView.reveal = async (element, options) => {
         // For compatibility: convert AzExtTreeItems into ResourceGroupsItems
-        // const item: ResourceGroupsItem | undefined = isAzExtTreeItem(element) ? itemCache.getItemForBranchItem(element) ?? await _treeDataProvider.findItemById(element.fullId) : element;
-        const item: ResourceGroupsItem | undefined = isAzExtTreeItem(element) ? itemCache.getItemForBranchItem(element) : element;
+        const item: ResourceGroupsItem | undefined = isAzExtTreeItem(element) ? itemCache.getItemForBranchItem(element) ?? await treeDataProvider.findItemById(element.fullId) : element;
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         await (treeView as InternalTreeView)._reveal(item!, options);
     }
