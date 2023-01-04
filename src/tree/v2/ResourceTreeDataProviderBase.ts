@@ -68,9 +68,6 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
     }
 
     async getTreeItem(element: ResourceGroupsItem): Promise<vscode.TreeItem> {
-        // TODO: remove this when I've verified we don't need it
-        // Convert branch item to resource groups item if treeView.reveal
-        // element = this.itemCache.getItemForBranchItem(element) ?? element;
         const treeItem = await element.getTreeItem();
         // TODO: remove this when we're done working with ids
         treeItem.tooltip = treeItem.id;
@@ -86,10 +83,7 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
     }
 
     getParent(element: ResourceGroupsItem): vscode.ProviderResult<ResourceGroupsItem> {
-        // TODO: remove this when I've verified we don't need it
-        // Convert branch item to resource groups item if treeView.reveal
-        // const item = this.itemCache.getItemForBranchItem(element);
-        return element.getParent?.(); // already converted to resource groups item in BranchDataProviderItem.getParent
+        return element.getParent?.();
     }
 
     async findItemById(id: string): Promise<ResourceGroupsItem | undefined> {
