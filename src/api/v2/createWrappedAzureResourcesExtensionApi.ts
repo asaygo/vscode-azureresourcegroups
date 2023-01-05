@@ -3,13 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { callWithTelemetryAndErrorHandlingSync, IActionContext, nonNullValue } from '@microsoft/vscode-azext-utils';
-import * as asyncHooks from 'async_hooks';
-import { AzureResourcesApiInternal } from '../../../hostapi.v2.internal';
+import { callWithTelemetryAndErrorHandlingSync, IActionContext } from '@microsoft/vscode-azext-utils';
+import { AzureResourcesApiInternal, AzureResourcesApiWithContext } from '../../../hostapi.v2.internal';
 
-export function createWrappedAzureResourcesExtensionApi(api: AzureResourcesApiInternal, extensionId: string): AzureResourcesApiInternal {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type RemoveContextFromParameterList<T extends [context: IActionContext, ...rest: unknown[]]> = T extends [infer _context, ...infer Rest] ? Rest : never;
 
-    function wrap<TFunctions extends Record<string, (...args: unknown[]) => unknown>>(functions: TFunctions): TFunctions {
+type FuncWithContextParam = (context: IActionContext, ...args: unknown[]) => unknown;
+type FuncsWithContextParam = { [functionName: string]: FuncWithContextParam; };
+
+type FuncWithoutContextParam<T extends FuncWithContextParam> = (...args: RemoveContextFromParameterList<Parameters<T>>) => ReturnType<T>;
+type FuncsWithoutContextParam<T extends FuncsWithContextParam> = { [K in keyof T]: FuncWithoutContextParam<T[K]> };
+
+export function createWrappedAzureResourcesExtensionApi(api: AzureResourcesApiWithContext, extensionId: string): AzureResourcesApiInternal {
+
+    function wrap<TFunctions extends FuncsWithContextParam>(functions: TFunctions): FuncsWithoutContextParam<TFunctions> {
         return wrapFunctionsInTelemetry(functions, {
             callbackIdPrefix: 'v2.',
             beforeHook: context => context.telemetry.properties.callingExtensionId = extensionId,
@@ -46,48 +54,29 @@ interface WrapFunctionsInTelemetryOptions {
     callbackIdPrefix?: string;
 }
 
-function wrapFunctionsInTelemetry<TFunctions extends Record<string, (...args: unknown[]) => unknown>>(functions: TFunctions, options?: WrapFunctionsInTelemetryOptions): TFunctions {
-    const wrappedFunctions = {};
-
-    Object.entries(functions).forEach(([functionName, func]) => {
-        wrappedFunctions[functionName] = (...args: Parameters<typeof func>): ReturnType<typeof func> => {
-            return callWithTelemetryAndErrorHandlingSync((options?.callbackIdPrefix ?? '') + functionName, context => {
+/**
+ * Wraps functions that take an `IActionContext` as their first parameter in telemetry handling.
+ *
+ * @param functions Functions that take `IActionContext` as their first parameter to wrap. The keys of the object will be used as the callbackId for telemetry.
+ * @param options see {@link WrapFunctionsInTelemetryOptions}
+ * @returns the same set of functions, but with the `IActionContext` removed from the parameter list.
+ */
+function wrapFunctionsInTelemetry<TFunctions extends FuncsWithContextParam>(functions: TFunctions, options?: WrapFunctionsInTelemetryOptions): FuncsWithoutContextParam<TFunctions> {
+    const wrappedFunctions: Partial<FuncsWithoutContextParam<TFunctions>> = {};
+    Object.entries(functions).forEach(([functionName, func]: [keyof TFunctions, FuncWithContextParam]) => {
+        const wrappedFunction: FuncWithoutContextParam<typeof func> = (...args: RemoveContextFromParameterList<Parameters<typeof func>>): ReturnType<typeof func> => {
+            return callWithTelemetryAndErrorHandlingSync((options?.callbackIdPrefix ?? '') + functionName.toString(), context => {
                 context.errorHandling.rethrow = true;
                 context.errorHandling.suppressDisplay = true;
                 context.errorHandling.suppressReportIssue = true;
                 options?.beforeHook?.(context);
-                setTelemetryContext(context);
-                return func(...args);
+                return func(context, ...args);
             });
-        }
+        };
+        wrappedFunctions[functionName] = wrappedFunction;
     });
 
-    return wrappedFunctions as TFunctions;
-}
-const contextStore = new Map<number, IActionContext>();
-
-asyncHooks.createHook({
-    init: (asyncId, _, triggerAsyncId) => {
-        if (contextStore.has(triggerAsyncId)) {
-            contextStore.set(asyncId, nonNullValue(contextStore.get(triggerAsyncId)))
-        }
-    },
-    destroy: (asyncId) => {
-        if (contextStore.has(asyncId)) {
-            contextStore.delete(asyncId);
-        }
-    }
-}).enable();
-
-function setTelemetryContext(context: IActionContext): void {
-    contextStore.set(asyncHooks.executionAsyncId(), context);
+    return wrappedFunctions as FuncsWithoutContextParam<TFunctions>;
 }
 
-/**
- * For use by v2 API methods wrapped via `createWrappedAzureResourcesExtensionApi`
- *
- * @returns The telemetry context created by the wrapper for the current async execution
- */
-export function getTelemetryContext(): IActionContext {
-    return nonNullValue(contextStore.get(asyncHooks.executionAsyncId()));
-}
+
