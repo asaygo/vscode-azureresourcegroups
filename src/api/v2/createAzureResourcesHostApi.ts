@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AzExtResourceType, callWithTelemetryAndErrorHandling } from '@microsoft/vscode-azext-utils';
+import { AzExtResourceType } from '@microsoft/vscode-azext-utils';
 import { AzureResource, BranchDataProvider, ResourceModelBase, VSCodeRevealOptions, WorkspaceResource, WorkspaceResourceProvider } from '@microsoft/vscode-azext-utils/hostapi.v2';
 import * as vscode from 'vscode';
 import { AzureResourceProvider, AzureResourcesHostApiInternal } from '../../../hostapi.v2.internal';
@@ -12,6 +12,7 @@ import { AzureResourceBranchDataProviderManager } from '../../tree/v2/azure/Azur
 import { AzureResourceTreeDataProvider } from '../../tree/v2/azure/AzureResourceTreeDataProvider';
 import { WorkspaceResourceBranchDataProviderManager } from '../../tree/v2/workspace/WorkspaceResourceBranchDataProviderManager';
 import { WorkspaceResourceTreeDataProvider } from '../../tree/v2/workspace/WorkspaceResourceTreeDataProvider';
+import { getTelemetryContext } from './createWrappedAzureResourcesExtensionApi';
 import { AzureResourceProviderManager, WorkspaceResourceProviderManager } from './ResourceProviderManagers';
 
 export function createAzureResourcesHostApi(
@@ -45,13 +46,8 @@ export function createAzureResourcesHostApi(
         },
 
         revealAzureResource: (id: string, options?: VSCodeRevealOptions) => {
-            // TODO: don't create new telemetry context here, instead use the context created from the initial wrapped API call
-            return callWithTelemetryAndErrorHandling('internalRevealResource', context => {
-                context.errorHandling.rethrow = true;
-                context.errorHandling.suppressDisplay = true;
-                context.errorHandling.suppressReportIssue = true;
-                return revealResource(context, id, options);
-            });
+            const context = getTelemetryContext();
+            return revealResource(context, id, options);
         },
     }
 }

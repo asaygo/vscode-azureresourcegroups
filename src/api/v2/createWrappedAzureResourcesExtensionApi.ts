@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { callWithTelemetryAndErrorHandlingSync, IActionContext } from '@microsoft/vscode-azext-utils';
+import { callWithTelemetryAndErrorHandlingSync, IActionContext, nonNullValue } from '@microsoft/vscode-azext-utils';
+import * as asyncHooks from 'async_hooks';
 import { AzureResourcesApiInternal } from '../../../hostapi.v2.internal';
 
 export function createWrappedAzureResourcesExtensionApi(api: AzureResourcesApiInternal, extensionId: string): AzureResourcesApiInternal {
@@ -55,10 +56,38 @@ function wrapFunctionsInTelemetry<TFunctions extends Record<string, (...args: un
                 context.errorHandling.suppressDisplay = true;
                 context.errorHandling.suppressReportIssue = true;
                 options?.beforeHook?.(context);
+                setTelemetryContext(context);
                 return func(...args);
             });
         }
     });
 
     return wrappedFunctions as TFunctions;
+}
+const contextStore = new Map<number, IActionContext>();
+
+asyncHooks.createHook({
+    init: (asyncId, _, triggerAsyncId) => {
+        if (contextStore.has(triggerAsyncId)) {
+            contextStore.set(asyncId, nonNullValue(contextStore.get(triggerAsyncId)))
+        }
+    },
+    destroy: (asyncId) => {
+        if (contextStore.has(asyncId)) {
+            contextStore.delete(asyncId);
+        }
+    }
+}).enable();
+
+function setTelemetryContext(context: IActionContext): void {
+    contextStore.set(asyncHooks.executionAsyncId(), context);
+}
+
+/**
+ * For use by v2 API methods wrapped via `createWrappedAzureResourcesExtensionApi`
+ *
+ * @returns The telemetry context created by the wrapper for the current async execution
+ */
+export function getTelemetryContext(): IActionContext {
+    return nonNullValue(contextStore.get(asyncHooks.executionAsyncId()));
 }
