@@ -133,7 +133,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
                     workspaceResourceTreeView: ext.workspaceTreeView,
                     registerApplicationResourceResolver,
                     registerWorkspaceResourceProvider,
-                    registerActivity: (activity) => registerActivity(undefined, activity),
+                    registerActivity,
                     pickAppResource,
                 }),
             },

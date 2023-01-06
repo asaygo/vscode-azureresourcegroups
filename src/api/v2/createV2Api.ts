@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AzExtResourceType, IActionContext } from '@microsoft/vscode-azext-utils';
+import { Activity } from '@microsoft/vscode-azext-utils/hostapi';
 import { AzureResource, BranchDataProvider, ResourceModelBase, VSCodeRevealOptions, WorkspaceResource, WorkspaceResourceProvider } from '@microsoft/vscode-azext-utils/hostapi.v2';
 import * as vscode from 'vscode';
 import { AzureResourceProvider, AzureResourcesApiInternal } from '../../../hostapi.v2.internal';
@@ -26,7 +27,7 @@ export function createV2Api(
     return {
         apiVersion: '2.0.0',
         activity: {
-            registerActivity
+            registerActivity: (_context: IActionContext, activity: Activity) => registerActivity(activity),
         },
         resources: createResourcesApi(
             azureResourceProviderManager,
