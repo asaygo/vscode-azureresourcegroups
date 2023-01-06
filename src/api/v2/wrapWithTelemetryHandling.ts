@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { callWithTelemetryAndErrorHandlingSync, IActionContext } from '@microsoft/vscode-azext-utils';
-import { AzureResourcesApiInternal, AzureResourcesApiWithContext } from '../../../hostapi.v2.internal';
+import { AzureResourcesApiInternal } from '../../../hostapi.v2.internal';
+import { AzureResourcesApiWithContext } from './createV2Api';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type RemoveContextFromParameterList<T extends [context: IActionContext, ...rest: unknown[]]> = T extends [infer _context, ...infer Rest] ? Rest : never;
@@ -15,7 +16,7 @@ type FuncsWithContextParam = { [functionName: string]: FuncWithContextParam; };
 type FuncWithoutContextParam<T extends FuncWithContextParam> = (...args: RemoveContextFromParameterList<Parameters<T>>) => ReturnType<T>;
 type FuncsWithoutContextParam<T extends FuncsWithContextParam> = { [K in keyof T]: FuncWithoutContextParam<T[K]> };
 
-export function createWrappedAzureResourcesExtensionApi(api: AzureResourcesApiWithContext, extensionId: string): AzureResourcesApiInternal {
+export function wrapWithTelemetryHandling(api: AzureResourcesApiWithContext, extensionId: string): AzureResourcesApiInternal {
 
     function wrap<TFunctions extends FuncsWithContextParam>(functions: TFunctions): FuncsWithoutContextParam<TFunctions> {
         return wrapFunctionsInTelemetry(functions, {

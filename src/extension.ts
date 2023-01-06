@@ -18,11 +18,11 @@ import { pickAppResource } from './api/pickAppResource';
 import { registerApplicationResourceResolver } from './api/registerApplicationResourceResolver';
 import { registerWorkspaceResourceProvider } from './api/registerWorkspaceResourceProvider';
 import { CompatibleAzExtTreeDataProvider } from './api/v2/compatibility/CompatibleAzExtTreeDataProvider';
-import { createAzureResourcesHostApi } from './api/v2/createAzureResourcesHostApi';
-import { createWrappedAzureResourcesExtensionApi } from './api/v2/createWrappedAzureResourcesExtensionApi';
+import { createV2Api } from './api/v2/createV2Api';
 import { DefaultAzureResourceProvider } from './api/v2/DefaultAzureResourceProvider';
 import { ResourceGroupsExtensionManager } from './api/v2/ResourceGroupsExtensionManager';
 import { AzureResourceProviderManager, WorkspaceResourceProviderManager } from './api/v2/ResourceProviderManagers';
+import { wrapWithTelemetryHandling } from './api/v2/wrapWithTelemetryHandling';
 import { registerCommands } from './commands/registerCommands';
 import { registerTagDiagnostics } from './commands/tags/registerTagDiagnostics';
 import { TagFileSystem } from './commands/tags/TagFileSystem';
@@ -105,25 +105,18 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
 
     const v2ApiFactory: AzureExtensionApiFactory<AzureResourcesApiInternal> = {
         apiVersion: '2.0.0',
-        createApi: (options: GetApiOptions) => {
-            return createWrappedAzureResourcesExtensionApi(
-                {
-                    apiVersion: '2.0.0',
-                    resources: createAzureResourcesHostApi(
-                        azureResourceProviderManager,
-                        azureResourceBranchDataProviderManager,
-                        azureResourceTreeDataProvider,
-                        workspaceResourceProviderManager,
-                        workspaceResourceBranchDataProviderManager,
-                        workspaceResourceTreeDataProvider,
-                    ),
-                    activity: {
-                        registerActivity
-                    },
-                },
-                options.extensionId ?? 'unknown'
-            );
-        }
+        createApi: (options?: GetApiOptions) =>
+            wrapWithTelemetryHandling(
+                createV2Api(
+                    azureResourceProviderManager,
+                    azureResourceBranchDataProviderManager,
+                    azureResourceTreeDataProvider,
+                    workspaceResourceProviderManager,
+                    workspaceResourceBranchDataProviderManager,
+                    workspaceResourceTreeDataProvider
+                ),
+                options?.extensionId ?? 'unknown'
+            ),
     };
 
     ext.v2.api = v2ApiFactory.createApi({ extensionId: 'ms-azuretools.vscode-azureresourcegroups' });
