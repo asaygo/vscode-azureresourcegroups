@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { notLoggedInCommands } from '@microsoft/vscode-azext-azureutils';
 import { AzExtServiceClientCredentials, IActionContext, nonNullProp, registerEvent } from '@microsoft/vscode-azext-utils';
 import { AzureExtensionApiProvider } from '@microsoft/vscode-azext-utils/api';
 import { ResourceModelBase } from '@microsoft/vscode-azext-utils/hostapi.v2';
@@ -123,27 +124,7 @@ export class AzureResourceTreeDataProvider extends ResourceTreeDataProviderBase 
                                 }));
                     }
                 } else if (api.status === 'LoggedOut') {
-                    return [
-                        new GenericItem(
-                            localize('signInLabel', 'Sign in to Azure...'),
-                            {
-                                commandId: 'azure-account.login',
-                                iconPath: new vscode.ThemeIcon('sign-in')
-                            }),
-                        new GenericItem(
-                            localize('createAccountLabel', 'Create an Azure Account...'),
-                            {
-                                commandId: 'azure-account.createAccount',
-                                iconPath: new vscode.ThemeIcon('add')
-                            }),
-                        new GenericItem(
-                            localize('createStudentAccount', 'Create an Azure for Students Account...'),
-                            {
-                                commandId: 'azureResourceGroups.openUrl',
-                                commandArgs: ['https://aka.ms/student-account'],
-                                iconPath: new vscode.ThemeIcon('mortar-board')
-                            }),
-                    ];
+                    return notLoggedInCommands.map((command) => new GenericItem(command.label, command));
                 } else {
                     return [
                         new GenericItem(

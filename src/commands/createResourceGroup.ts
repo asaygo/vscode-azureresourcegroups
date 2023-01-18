@@ -4,19 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IResourceGroupWizardContext, LocationListStep, ResourceGroupCreateStep, ResourceGroupNameStep } from '@microsoft/vscode-azext-azureutils';
-import { AzureWizard, AzureWizardExecuteStep, AzureWizardPromptStep, ExecuteActivityContext, IActionContext, nonNullProp, subscriptionExperience } from '@microsoft/vscode-azext-utils';
+import { AzureWizard, AzureWizardExecuteStep, AzureWizardPromptStep, ExecuteActivityContext, IActionContext, nonNullProp } from '@microsoft/vscode-azext-utils';
 import { AzureSubscription } from '@microsoft/vscode-azext-utils/hostapi.v2';
 import { window } from 'vscode';
 import { ext } from '../extensionVariables';
 import { SubscriptionItem } from '../tree/azure/SubscriptionItem';
 import { createActivityContext } from '../utils/activityUtils';
 import { localize } from '../utils/localize';
+import { pickSubscription } from '../utils/pickSubscription';
 import { createSubscriptionContext } from '../utils/v2/credentialsUtils';
 
 export async function createResourceGroup(context: IActionContext, node?: SubscriptionItem): Promise<void> {
     let subscription: AzureSubscription | undefined = node?.subscription;
     if (!subscription) {
-        subscription = await subscriptionExperience(context, ext.v2.api.resources.azureResourceTreeDataProvider);
+        subscription = await pickSubscription(context);
     }
 
     const wizardContext: IResourceGroupWizardContext & ExecuteActivityContext = {

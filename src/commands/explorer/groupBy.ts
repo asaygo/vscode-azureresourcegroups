@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { uiUtils } from "@microsoft/vscode-azext-azureutils";
-import { IActionContext, nonNullProp, subscriptionExperience } from "@microsoft/vscode-azext-utils";
+import { IActionContext, nonNullProp } from "@microsoft/vscode-azext-utils";
 import { AzureSubscription } from "@microsoft/vscode-azext-utils/hostapi.v2";
 import { QuickPickItem } from "vscode";
-import { ext } from "../../extensionVariables";
 import { createResourceClient } from "../../utils/azureClients";
 import { localize } from "../../utils/localize";
+import { pickSubscription } from "../../utils/pickSubscription";
 import { settingUtils } from "../../utils/settingUtils";
 import { createSubscriptionContext } from "../../utils/v2/credentialsUtils";
 
@@ -19,7 +19,7 @@ export function buildGroupByCommand(setting: string) {
 
 async function groupBy(context: IActionContext, setting: string): Promise<void> {
     if (setting === 'armTag') {
-        const subscription = await subscriptionExperience(context, ext.v2.api.resources.azureResourceTreeDataProvider);
+        const subscription = await pickSubscription(context);
         const tag = await context.ui.showQuickPick(getQuickPicks(context, subscription), {
             placeHolder: localize('groupByArmTagKey', 'Select the tag key to group by...'),
             loadingPlaceHolder: localize('loadingTags', 'Loading tags...'),
