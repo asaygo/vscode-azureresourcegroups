@@ -5,17 +5,13 @@
 
 import * as vscode from 'vscode';
 import { AzExtResourceType } from '../../api/src/index';
+import { getExternalExtensions } from '../utils/extensionUtils';
 import { getResourceContributions } from '../utils/getResourceContributions';
 
-const builtInExtensionIdRegex = /^vscode\./i;
-
 function getInactiveExtensions(): vscode.Extension<unknown>[] {
-    return vscode.extensions
-        .all
+    return getExternalExtensions()
         // We don't need to activate extensions that are already active
-        .filter(extension => !extension.isActive)
-        // We don't need to look at any built-in extensions (often the majority of them)
-        .filter(extension => !builtInExtensionIdRegex.test(extension.id));
+        .filter(extension => !extension.isActive);
 }
 
 export class ResourceGroupsExtensionManager {

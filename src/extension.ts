@@ -27,6 +27,7 @@ import { registerCommands } from './commands/registerCommands';
 import { registerTagDiagnostics } from './commands/tags/registerTagDiagnostics';
 import { TagFileSystem } from './commands/tags/TagFileSystem';
 import { ext } from './extensionVariables';
+import { setupAzureExtensionTelemetry } from './setupInstalledAzureExtensionsTelemetry';
 import { AzureResourceBranchDataProviderManager } from './tree/azure/AzureResourceBranchDataProviderManager';
 import { DefaultAzureResourceBranchDataProvider } from './tree/azure/DefaultAzureResourceBranchDataProvider';
 import { registerAzureTree } from './tree/azure/registerAzureTree';
@@ -59,6 +60,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         activateContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
 
         setupEvents(context);
+        setupAzureExtensionTelemetry(activateContext);
 
         ext.tagFS = new TagFileSystem(ext.appResourceTree);
         context.subscriptions.push(vscode.workspace.registerFileSystemProvider(TagFileSystem.scheme, ext.tagFS));
@@ -75,7 +77,7 @@ export async function activateInternal(context: vscode.ExtensionContext, perfSta
         registerCommands();
     });
 
-    const extensionManager = new ResourceGroupsExtensionManager()
+    const extensionManager = new ResourceGroupsExtensionManager();
 
     const azureResourceBranchDataProviderManager = new AzureResourceBranchDataProviderManager(
         new DefaultAzureResourceBranchDataProvider(),
