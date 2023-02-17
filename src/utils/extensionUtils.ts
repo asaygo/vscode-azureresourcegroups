@@ -7,9 +7,12 @@ import * as vscode from 'vscode';
 
 const builtInExtensionIdRegex = /^vscode\./i;
 
+/**
+ * @returns All extensions that are not built-in
+ */
 export function getExternalExtensions(): vscode.Extension<unknown>[] {
     return vscode.extensions
         .all
-        // We don't need to look at any built-in extensions (often the majority of them)
+        // exclude built-in extensions
         .filter(extension => !builtInExtensionIdRegex.test(extension.id));
 }
