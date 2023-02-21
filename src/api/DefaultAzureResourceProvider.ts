@@ -4,54 +4,49 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GenericResource, ResourceGroup } from '@azure/arm-resources';
-import { getResourceGroupFromId } from "@microsoft/vscode-azext-azureutils";
-import { callWithTelemetryAndErrorHandling, getAzExtResourceType, IActionContext, nonNullProp } from '@microsoft/vscode-azext-utils';
+import { getResourceGroupFromId, uiUtils } from "@microsoft/vscode-azext-azureutils";
+import { callWithTelemetryAndErrorHandling, createSubscriptionContext, getAzExtResourceType, IActionContext, nonNullProp } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { AzureResource, AzureSubscription } from '../../api/src/index';
 import { AzureResourceProvider } from '../../hostapi.v2.internal';
-import { defaultAzureResourcesServiceFactory } from '../AzureService';
-import { ext } from '../extensionVariables';
+import { createResourceClient } from '../utils/azureClients';
 
 export class DefaultAzureResourceProvider implements AzureResourceProvider {
     private readonly onDidChangeResourceEmitter = new vscode.EventEmitter<AzureResource | undefined>();
-
-    private readonly createAzureService = () => ext.testing.overrideAzureServiceFactory?.() ?? defaultAzureResourcesServiceFactory();
 
     getResources(subscription: AzureSubscription): Promise<AzureResource[] | undefined> {
         return callWithTelemetryAndErrorHandling(
             'defaultAzureResourceProvider.getResources',
             async (context: IActionContext) => {
-                const azureResources = await this.listResources(context, subscription);
-                const resourceGroups = await this.listResourceGroups(context, subscription);
+                const azureResources = await listResources(context, subscription);
+                const resourceGroups = await listResourceGroups(context, subscription);
                 return [...azureResources, ...resourceGroups];
             });
     }
 
     onDidChangeResource = this.onDidChangeResourceEmitter.event;
+}
 
-    /**
-     * @returns Deduped list of Azure resources in the specified subscription
-     */
-    private async listResources(context: IActionContext, subscription: AzureSubscription): Promise<AzureResource[]> {
-        const allResources = await this.createAzureService().listResources(context, subscription);
+/**
+ * @returns Deduped list of Azure resources in the specified subscription
+ */
+async function listResources(context: IActionContext, subscription: AzureSubscription): Promise<AzureResource[]> {
+    const subContext = createSubscriptionContext(subscription);
+    const client = await createResourceClient([context, subContext]);
 
-        // dedupe resources to fix https://github.com/microsoft/vscode-azureresourcegroups/issues/526
-        const allResourcesDeduped: GenericResource[] = [...new Map(allResources.map((item) => [item.id, item])).values()];
-        context.telemetry.measurements.resourceCount = allResourcesDeduped.length;
+    // Load more currently broken https://github.com/Azure/azure-sdk-for-js/issues/20380
+    const allResources = await uiUtils.listAllIterator(client.resources.list());
 
-        if (allResourcesDeduped.length !== allResources.length) {
-            context.telemetry.properties.duplicateResources = 'true';
-            context.telemetry.measurements.rawResourceCount = allResources.length;
-        }
+    // dedupe resources to fix https://github.com/microsoft/vscode-azureresourcegroups/issues/526
+    const allResourcesDeduped: GenericResource[] = [...new Map(allResources.map((item) => [item.id, item])).values()];
+    context.telemetry.measurements.resourceCount = allResourcesDeduped.length;
 
-        return allResourcesDeduped.map(resource => createAzureResource(subscription, resource));
+    if (allResourcesDeduped.length !== allResources.length) {
+        context.telemetry.properties.duplicateResources = 'true';
+        context.telemetry.measurements.rawResourceCount = allResources.length;
     }
 
-    private async listResourceGroups(context: IActionContext, subscription: AzureSubscription): Promise<AzureResource[]> {
-        const allResourceGroups: ResourceGroup[] = await this.createAzureService().listResourceGroups(context, subscription);
-        context.telemetry.measurements.resourceGroupCount = allResourceGroups.length;
-        return allResourceGroups.map(resource => createResourceGroup(subscription, resource));
-    }
+    return allResourcesDeduped.map(resource => createAzureResource(subscription, resource));
 }
 
 function createAzureResource(subscription: AzureSubscription, resource: GenericResource): AzureResource {
@@ -76,7 +71,15 @@ function createAzureResource(subscription: AzureSubscription, resource: GenericR
     };
 }
 
+async function listResourceGroups(context: IActionContext, subscription: AzureSubscription): Promise<AzureResource[]> {
+    const subContext = createSubscriptionContext(subscription);
+    const client = await createResourceClient([context, subContext]);
 
+    const allResourceGroups: ResourceGroup[] = await uiUtils.listAllIterator(client.resourceGroups.list());
+    context.telemetry.measurements.resourceGroupCount = allResourceGroups.length;
+
+    return allResourceGroups.map(resource => createResourceGroup(subscription, resource));
+}
 
 export function createResourceGroup(subscription: AzureSubscription, resourceGroup: ResourceGroup): AzureResource {
     return {
