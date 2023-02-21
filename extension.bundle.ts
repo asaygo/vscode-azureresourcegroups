@@ -24,7 +24,6 @@ export * from './api/src/resources/workspace';
 export * from './api/src/utils/getApi';
 export * from './api/src/utils/wrapper';
 export * from './src/api/DefaultAzureResourceProvider';
-export * from './src/AzureService';
 export * from './src/commands/openInPortal';
 export * from './src/commands/tags/getTagDiagnostics';
 export * from './src/commands/viewProperties';
