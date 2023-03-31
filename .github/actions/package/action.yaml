@@ -4,9 +4,6 @@ description: 'Build extension VSIX'
 runs:
   using: 'composite'
   steps:
-    - name: Setup
-      uses: ./.github/actions/setup
-
     - name: Clean README
       run: npm run cleanReadme
       shell: bash
