@@ -47,14 +47,14 @@ jobs:
         # entry to lower the number of runners used, macOS runners are expensive,
         # and we assume that Ubuntu is enough to cover the UNIX case.
         os: [ubuntu-latest, windows-latest, macos-latest]
-        steps:
-          - run: |
-              sudo cp .azure-pipelines/linux/xvfb.init /etc/init.d/xvfb
-              sudo chmod +x /etc/init.d/xvfb
-              sudo update-rc.d xvfb defaults
-              sudo service xvfb start
-            shell: 'bash'
-            name: 'Start X Virtual Frame Buffer'
-            if: matrix.os == 'ubuntu-latest'
-          - run: npm test
-            name: Test
+    steps:
+      - run: |
+          sudo cp .azure-pipelines/linux/xvfb.init /etc/init.d/xvfb
+          sudo chmod +x /etc/init.d/xvfb
+          sudo update-rc.d xvfb defaults
+          sudo service xvfb start
+        shell: 'bash'
+        name: 'Start X Virtual Frame Buffer'
+        if: matrix.os == 'ubuntu-latest'
+      - run: npm test
+        name: Test
