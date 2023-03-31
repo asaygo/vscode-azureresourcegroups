@@ -16,9 +16,9 @@ runs:
       shell: bash
 
     - name: Upload VSIX
-        uses: actions/upload-artifact@v3
-        with:
-          name: VSIX
-          path: '*.vsix'
-          if-no-files-found: error
-          retention-days: 7
+      uses: actions/upload-artifact@v3
+      with:
+        name: VSIX
+        path: '*.vsix'
+        if-no-files-found: error
+        retention-days: 7
