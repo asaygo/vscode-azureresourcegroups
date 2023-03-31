@@ -12,4 +12,4 @@ runs:
     - name: Run headless test
       uses: coactions/setup-xvfb@v1
       with:
-        run: npm run test
+        run: npm test
