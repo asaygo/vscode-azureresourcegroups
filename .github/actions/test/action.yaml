@@ -8,6 +8,7 @@ runs:
 
     - name: 'Start X Virtual Frame Buffer'
       if: matrix.os == 'ubuntu-latest'
+      shell: bash
       run: |
         sudo cp .azure-pipelines/linux/xvfb.init /etc/init.d/xvfb
         sudo chmod +x /etc/init.d/xvfb
@@ -15,5 +16,7 @@ runs:
         sudo service xvfb start
 
     - run: npm build
+      shell: bash
 
     - run: npm test
+      shell: bash
