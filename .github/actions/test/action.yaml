@@ -6,13 +6,8 @@ runs:
     - name: Setup
       uses: ./.github/actions/setup
 
-    - name: 'Start X Virtual Frame Buffer'
-      shell: bash
-      run: |
-        sudo cp .azure-pipelines/linux/xvfb.init /etc/init.d/xvfb
-        sudo chmod +x /etc/init.d/xvfb
-        sudo update-rc.d xvfb defaults
-        sudo service xvfb start
+    - name: Run headless test
+      uses: coactions/setup-xvfb@v1
 
     - run: npm run build
       shell: bash
