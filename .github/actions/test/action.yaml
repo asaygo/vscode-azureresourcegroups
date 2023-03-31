@@ -15,8 +15,8 @@ runs:
         sudo update-rc.d xvfb defaults
         sudo service xvfb start
 
-    - run: npm build
+    - run: npm run build
       shell: bash
 
-    - run: npm test
+    - run: npm run test
       shell: bash
