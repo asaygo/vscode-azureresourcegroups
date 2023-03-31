@@ -13,3 +13,5 @@ runs:
       uses: coactions/setup-xvfb@v1
       with:
         run: npm test
+        env:
+          DISPLAY: :10 # Only necessary for linux tests
