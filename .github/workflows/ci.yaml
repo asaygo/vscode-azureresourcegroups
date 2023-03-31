@@ -1,58 +1,11 @@
-name: Lint
+name: CI
 on:
   push:
 
 jobs:
-  setup:
-    name: Set up Node
-    runs-on: 'ubuntu-latest'
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-      - run: npm ci
-
   lint:
     name: Lint
-    needs: setup
-    runs-on: 'ubuntu-latest'
+    runs-on: ubuntu-latest
     steps:
-      - run: npm run lint
-
-  package:
-    name: Create VSIX
-    needs: setup
-    runs-on: 'ubuntu-latest'
-    steps:
-      - run: npm package
-      - name: Upload VSIX
-        uses: actions/upload-artifact@v2
-        with:
-          name: Extension VSIX
-          path: '*.vsix'
-          if-no-files-found: error
-          retention-days: 7
-
-  test:
-    name: Test
-    needs: setup
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # We're not running CI on macOS for now because it's one less matrix
-        # entry to lower the number of runners used, macOS runners are expensive,
-        # and we assume that Ubuntu is enough to cover the UNIX case.
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    steps:
-      - run: |
-          sudo cp .azure-pipelines/linux/xvfb.init /etc/init.d/xvfb
-          sudo chmod +x /etc/init.d/xvfb
-          sudo update-rc.d xvfb defaults
-          sudo service xvfb start
-        shell: 'bash'
-        name: 'Start X Virtual Frame Buffer'
-        if: matrix.os == 'ubuntu-latest'
-      - run: npm test
-        name: Test
+      - name: Lint
+        uses: ./.github/actions/lint

@@ -1,0 +1,11 @@
+name: 'Lint'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup
+      uses: ./.github/actions/setup
+
+    - name: Lint
+      run: npm run lint
+      shell: bash
