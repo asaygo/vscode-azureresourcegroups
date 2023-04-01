@@ -38,8 +38,20 @@ jobs:
       - name: Upload VSIX
         uses: actions/upload-artifact@v3
         with:
-          name: VSIX
+          name: vsix
           path: '*.vsix'
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload web bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-bundle
+          path: |
+            dist/web/*.js*
+            package.json
+            package.nls.json
+            resources/**
           if-no-files-found: error
           retention-days: 7
 
