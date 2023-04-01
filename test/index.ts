@@ -11,9 +11,12 @@ export async function run(): Promise<void> {
     const options: Mocha.MochaOptions = {
         ui: 'tdd',
         color: true,
-        reporter: 'mocha-multi-reporters',
+        reporter: '@rwx-research/mocha-multi-reporters',
         reporterOptions: {
-            reporterEnabled: 'spec, mocha-junit-reporter',
+            reporterEnabled: 'json, spec, mocha-junit-reporter',
+            jsonReporterOptions: {
+                output: path.resolve(__dirname, '..', '..', 'test-results.json'),
+            },
             mochaJunitReporterReporterOptions: {
                 mochaFile: path.resolve(__dirname, '..', '..', 'test-results.xml')
             }
