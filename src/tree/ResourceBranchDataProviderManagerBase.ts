@@ -6,6 +6,7 @@
 import { IActionContext } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { BranchDataProvider, ResourceBase, ResourceModelBase } from '../../api/src/index';
+import { ext } from '../extensionVariables';
 import { wrapFunctionsInTelemetry } from '../utils/wrapFunctionsInTelemetry';
 
 export abstract class ResourceBranchDataProviderManagerBase<TResourceType, TBranchDataProvider extends BranchDataProvider<ResourceBase, ResourceModelBase>> extends vscode.Disposable {
@@ -79,6 +80,7 @@ function wrapBranchDataProvider<TBranchDataProvider extends BranchDataProvider<R
                 getChildren: branchDataProvider.getChildren.bind(branchDataProvider) as typeof branchDataProvider.getChildren,
                 getTreeItem: branchDataProvider.getTreeItem.bind(branchDataProvider) as typeof branchDataProvider.getResourceItem,
                 getResourceItem: async (element: ResourceBase) => {
+                    ext.outputChannel.trace(`BranchDataProvider['${type}'].getResourceItem called for '${element.id}'`);
                     const result = await branchDataProvider.getResourceItem(element);
                     if (!result) {
                         throw new NullishGetResourceItemResultError(result);
@@ -91,6 +93,7 @@ function wrapBranchDataProvider<TBranchDataProvider extends BranchDataProvider<R
                 callbackIdPrefix: 'branchDataProvider.',
                 beforeHook: (context: IActionContext) => {
                     context.telemetry.properties.branchDataProviderType = String(type);
+                    ext.outputChannel.trace(`BranchDataProvider['${type}'].${context['callbackId']}`);
                 }
             }
         ),

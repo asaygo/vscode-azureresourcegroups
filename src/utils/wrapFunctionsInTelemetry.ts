@@ -3,8 +3,9 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from "@microsoft/vscode-azext-utils";
+import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from "@microsoft/vscode-azext-utils";
 import { ext } from "../extensionVariables";
+import { callWithLogging } from "./callWithLogging";
 
 function stringifyError(e: unknown): string {
     const error = parseError(e);
@@ -57,7 +58,7 @@ export function wrapFunctionsInTelemetry<TFunctions extends Record<string, (...a
 
     Object.entries(functions).forEach(([functionName, func]) => {
         wrappedFunctions[functionName] = (...args: Parameters<typeof func>): ReturnType<typeof func> => {
-            return callWithTelemetryAndErrorHandling((options?.callbackIdPrefix ?? '') + functionName, async (context) => {
+            return callWithLogging((options?.callbackIdPrefix ?? '') + functionName, async (context) => {
                 context.errorHandling.rethrow = true;
                 context.errorHandling.suppressDisplay = true;
                 context.errorHandling.suppressReportIssue = true;

@@ -6,7 +6,7 @@
 'use strict';
 
 import { registerAzureUtilsExtensionVariables } from '@microsoft/vscode-azext-azureutils';
-import { AzExtTreeDataProvider, AzureExtensionApiFactory, callWithTelemetryAndErrorHandling, createApiProvider, createAzExtOutputChannel, IActionContext, registerUIExtensionVariables } from '@microsoft/vscode-azext-utils';
+import { AzExtTreeDataProvider, AzureExtensionApiFactory, callWithTelemetryAndErrorHandling, createApiProvider, createAzExtLogOutputChannel, IActionContext, registerUIExtensionVariables } from '@microsoft/vscode-azext-utils';
 import type { AppResourceResolver } from '@microsoft/vscode-azext-utils/hostapi';
 import { apiUtils, GetApiOptions } from 'api/src/utils/apiUtils';
 import * as vscode from 'vscode';
@@ -38,6 +38,7 @@ import { ResourceGroupsItem } from './tree/ResourceGroupsItem';
 import { registerWorkspaceTree } from './tree/workspace/registerWorkspaceTree';
 import { WorkspaceDefaultBranchDataProvider } from './tree/workspace/WorkspaceDefaultBranchDataProvider';
 import { WorkspaceResourceBranchDataProviderManager } from './tree/workspace/WorkspaceResourceBranchDataProviderManager';
+import { setupAzureLogger } from './utils/logging';
 
 export async function activate(context: vscode.ExtensionContext, perfStats: { loadStartTime: number; loadEndTime: number }, ignoreBundle?: boolean): Promise<apiUtils.AzureExtensionApiProvider> {
     // the entry point for vscode.dev is this activate, not main.js, so we need to instantiate perfStats here
@@ -46,8 +47,9 @@ export async function activate(context: vscode.ExtensionContext, perfStats: { lo
 
     ext.context = context;
     ext.ignoreBundle = ignoreBundle;
-    ext.outputChannel = createAzExtOutputChannel('Azure Resource Groups', ext.prefix);
+    ext.outputChannel = createAzExtLogOutputChannel('Azure Resources');
     context.subscriptions.push(ext.outputChannel);
+    setupAzureLogger();
 
     registerUIExtensionVariables(ext);
     registerAzureUtilsExtensionVariables(ext);

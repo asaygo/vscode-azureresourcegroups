@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { callWithTelemetryAndErrorHandling, createSubscriptionContext, IActionContext, ISubscriptionContext } from "@microsoft/vscode-azext-utils";
+import { createSubscriptionContext, IActionContext, ISubscriptionContext } from "@microsoft/vscode-azext-utils";
 import * as vscode from "vscode";
 import { AzExtResourceType, AzureSubscription } from "../../../api/src/index";
 import { AzureResourceProviderManager } from "../../api/ResourceProviderManagers";
 import { azureExtensions } from "../../azureExtensions";
 import { showHiddenTypesSettingKey } from "../../constants";
+import { callWithLogging } from "../../utils/callWithLogging";
 import { settingUtils } from "../../utils/settingUtils";
 import { treeUtils } from "../../utils/treeUtils";
 import { createPortalUrl } from "../../utils/v2/createPortalUrl";
@@ -44,7 +45,7 @@ export class SubscriptionItem implements ResourceGroupsItem {
     public readonly subscription: ISubscriptionContext & AzureSubscription;
 
     async getChildren(): Promise<ResourceGroupsItem[]> {
-        return await callWithTelemetryAndErrorHandling('subscriptionItem.getChildren', async (context: IActionContext) => {
+        return await callWithLogging('subscriptionItem.getChildren', async (context: IActionContext) => {
             let resources = await this.resourceProviderManager.getResources(this.subscription);
             context.telemetry.measurements.resourceCount = resources.length;
 

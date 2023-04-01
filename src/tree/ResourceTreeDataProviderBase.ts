@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { callWithTelemetryAndErrorHandling, parseError } from '@microsoft/vscode-azext-utils';
+import { parseError } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { ResourceBase, ResourceModelBase } from '../../api/src/index';
+import { callWithLogging } from '../utils/callWithLogging';
 import { BranchDataItemCache } from './BranchDataItemCache';
 import { BranchDataItemWrapper } from './BranchDataItemWrapper';
 import { InvalidItem } from './InvalidItem';
@@ -72,7 +73,7 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
     async getTreeItem(element: ResourceGroupsItem): Promise<vscode.TreeItem> {
         try {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            return (await callWithTelemetryAndErrorHandling('getTreeItem', async (context) => {
+            return (await callWithLogging('getTreeItem', async (context) => {
                 context.errorHandling.rethrow = true;
                 return await element.getTreeItem();
             }))!;

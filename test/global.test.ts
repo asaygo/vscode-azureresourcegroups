@@ -5,7 +5,7 @@
 
 import { TestOutputChannel, TestUserInput } from '@microsoft/vscode-azext-dev';
 import * as vscode from 'vscode';
-import { ext, registerOnActionStartHandler } from '../extension.bundle';
+import { ext, IAzExtLogOutputChannel, registerOnActionStartHandler } from '../extension.bundle';
 
 export let longRunningTestsEnabled: boolean;
 
@@ -16,7 +16,7 @@ suiteSetup(async function (this: Mocha.Context): Promise<void> {
     await vscode.extensions.getExtension('ms-azuretools.vscode-azureresourcegroups')?.activate();
 
     await vscode.commands.executeCommand('azureResourceGroups.refresh'); // activate the extension before tests begin
-    ext.outputChannel = new TestOutputChannel();
+    ext.outputChannel = new TestOutputChannel() as IAzExtLogOutputChannel;
 
     registerOnActionStartHandler(context => {
         // Use `TestUserInput` by default so we get an error if an unexpected call to `context.ui` occurs, rather than timing out
