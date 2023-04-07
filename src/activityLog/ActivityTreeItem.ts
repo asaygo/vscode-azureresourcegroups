@@ -3,7 +3,7 @@
 *  Licensed under the MIT License. See License.txt in the project root for license information.
 *--------------------------------------------------------------------------------------------*/
 
-import { AzExtParentTreeItem, AzExtTreeItem, callWithTelemetryAndErrorHandling, IActionContext, TreeItemIconPath } from "@microsoft/vscode-azext-utils";
+import { AzExtParentTreeItem, AzExtTreeItem, callWithTelemetryAndErrorHandling, createContextValue, IActionContext, TreeItemIconPath } from "@microsoft/vscode-azext-utils";
 import { Activity, ActivityTreeItemOptions, OnErrorActivityData, OnProgressActivityData, OnStartActivityData, OnSuccessActivityData } from "@microsoft/vscode-azext-utils/hostapi";
 import { Disposable, ThemeColor, ThemeIcon, TreeItemCollapsibleState } from "vscode";
 import { localize } from "../utils/localize";
@@ -18,8 +18,14 @@ export class ActivityTreeItem extends AzExtParentTreeItem implements Disposable 
     public startedAtMs: number;
 
     public get contextValue(): string {
-        const contextValues = new Set(['azureActivity', ...(this.state.contextValuesToAdd ?? [])]);
-        return Array.from(contextValues).sort().join(';');
+        const contextValues = ['azureActivity', ...(this.state.contextValuesToAdd ?? [])];
+        if (this.status) {
+            contextValues.push(this.status);
+            if (this.status === ActivityStatus.Done) {
+                contextValues.push(this.error ? 'failed' : 'succeeded');
+            }
+        }
+        return createContextValue(contextValues);
     }
 
     public get label(): string {
