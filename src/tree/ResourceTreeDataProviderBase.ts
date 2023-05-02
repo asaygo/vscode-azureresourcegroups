@@ -3,20 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { callWithTelemetryAndErrorHandling, parseError } from '@microsoft/vscode-azext-utils';
 import * as vscode from 'vscode';
 import { ResourceBase, ResourceModelBase } from '../../api/src/index';
 import { BranchDataItemCache } from './BranchDataItemCache';
 import { BranchDataItemWrapper } from './BranchDataItemWrapper';
-import { InvalidItem } from './InvalidItem';
 import { ResourceGroupsItem } from './ResourceGroupsItem';
+import { TreeDataProviderBase } from './TreeDataProviderBase';
 import { TreeItemStateStore } from './TreeItemState';
 
-export abstract class ResourceTreeDataProviderBase extends vscode.Disposable implements vscode.TreeDataProvider<ResourceGroupsItem> {
+export abstract class ResourceTreeDataProviderBase extends TreeDataProviderBase {
     private readonly branchTreeDataChangeSubscription: vscode.Disposable;
-    private readonly refreshSubscription: vscode.Disposable;
     private readonly resourceProviderManagerListener: vscode.Disposable;
-    private readonly onDidChangeTreeDataEmitter = new vscode.EventEmitter<void | ResourceGroupsItem | ResourceGroupsItem[] | null | undefined>();
 
     constructor(
         protected readonly itemCache: BranchDataItemCache,
@@ -26,25 +23,20 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
         private readonly state?: TreeItemStateStore,
         callOnDispose?: () => void) {
         super(
+            onRefresh,
             () => {
                 callOnDispose?.();
-
                 this.branchTreeDataChangeSubscription.dispose();
-                this.refreshSubscription.dispose();
                 this.resourceProviderManagerListener.dispose();
             });
 
         this.branchTreeDataChangeSubscription = onDidChangeBranchTreeData(e => this.notifyTreeDataChanged(e));
 
-        this.refreshSubscription = onRefresh((e) => this.onDidChangeTreeDataEmitter.fire(e));
-
         // TODO: If only individual resources change, just update the tree related to those resources.
         this.resourceProviderManagerListener = onDidChangeResource(() => this.onDidChangeTreeDataEmitter.fire());
     }
 
-    onDidChangeTreeData: vscode.Event<void | ResourceGroupsItem | ResourceGroupsItem[] | null | undefined> = this.onDidChangeTreeDataEmitter.event;
-
-    notifyTreeDataChanged(data: void | ResourceModelBase | ResourceModelBase[] | null | undefined): void {
+    override notifyTreeDataChanged(data: void | ResourceModelBase | ResourceModelBase[] | null | undefined): void {
         const rgItems: ResourceGroupsItem[] = [];
 
         // eslint-disable-next-line no-extra-boolean-cast
@@ -69,20 +61,7 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
         }
     }
 
-    async getTreeItem(element: ResourceGroupsItem): Promise<vscode.TreeItem> {
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            return (await callWithTelemetryAndErrorHandling('getTreeItem', async (context) => {
-                context.errorHandling.rethrow = true;
-                return await element.getTreeItem();
-            }))!;
-        } catch (e) {
-            const invalidItem = new InvalidItem(parseError(e));
-            return invalidItem.getTreeItem();
-        }
-    }
-
-    async getChildren(element?: ResourceGroupsItem | undefined): Promise<ResourceGroupsItem[] | null | undefined> {
+    override async getChildren(element?: ResourceGroupsItem | undefined): Promise<ResourceGroupsItem[] | null | undefined> {
         const children = await this.onGetChildren(element);
         return children?.map(child => {
             if (this.state) {
@@ -94,10 +73,6 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
             }
             return child;
         });
-    }
-
-    getParent(element: ResourceGroupsItem): vscode.ProviderResult<ResourceGroupsItem> {
-        return element.getParent?.();
     }
 
     async findItemById(id: string): Promise<ResourceGroupsItem | undefined> {
@@ -126,6 +101,4 @@ export abstract class ResourceTreeDataProviderBase extends vscode.Disposable imp
     protected isAncestorOf(element: ResourceGroupsItem, id: string): boolean {
         return id.toLowerCase().startsWith(element.id.toLowerCase() + '/');
     }
-
-    protected abstract onGetChildren(element?: ResourceGroupsItem | undefined): Promise<ResourceGroupsItem[] | null | undefined>;
 }
